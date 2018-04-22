@@ -23,9 +23,6 @@
 #define SLIDER_SCALE_ON 0.7
 #define XOFFSET 10
 
-#define DEBUG_XSHAPE
-#undef DEBUG_XSHAPE
-
 const char *osd_default_font =
   "-misc-fixed-medium-r-semicondensed--*-*-*-*-c-*-*-*";
 #if 0
@@ -108,7 +105,7 @@ draw_bar(xosd * osd, int line)
   int is_slider = l->type == LINE_slider, nbars, on;
   XRectangle p, m;
   p.x = XOFFSET;
-  p.y = 0;
+  p.y = osd->line_height * line;
   p.width = -osd->extent->y / 2;
   p.height = -osd->extent->y;
 
@@ -182,7 +179,7 @@ _draw_text(xosd * osd, char *string, int x, int y)
 static void
 draw_text(xosd * osd, int line)
 {
-  int x = XOFFSET, y = -osd->extent->y;
+  int x = XOFFSET, y = osd->line_height * line - osd->extent->y;
   struct xosd_text *l = &osd->lines[line].text;
 
   assert(osd);
@@ -234,9 +231,9 @@ draw_text(xosd * osd, int line)
  * This is running in it's own thread for Expose-events.
  * The order of update handling is important:
  * 1. The size must be correct -> UPD_size first
- * 2. The window must be mapped before something is drawn -> UPD_show
+ * 2. Change the position, which might expose part of window -> UPD_pos
  * 3. The XShape must be set before something is drawn -> UPD_mask, UPD_lines
- * 4. Change the position last -> UPD_pos
+ * 4. The window should be mapped before something is drawn -> UPD_show
  * 5. Start the timer last to not account for processing time -> UPD_timer
  * If you change this order, you'll get a broken display. You've been warned!
  */
@@ -266,11 +263,19 @@ event_loop(void *osdv)
     FD_SET(xfd, &readfds);
     FD_SET(osd->pipefd[0], &readfds);
 
+    /* Hide display requested. */
+    if (osd->update & UPD_hide) {
+      DEBUG(Dupdate, "UPD_hide");
+      if (osd->mapped) {
+        XUnmapWindow(osd->display, osd->window);
+        osd->mapped = 0;
+      }
+    }
     /* The font, outline or shadow was changed. Recalculate line height,
      * resize window and bitmaps. */
     if (osd->update & UPD_size) {
       XFontSetExtents *extents = XExtentsOfFontSet(osd->fontset);
-      DEBUG(Dupdate, "UPD_font");
+      DEBUG(Dupdate, "UPD_size");
       osd->extent = &extents->max_logical_extent;
       osd->line_height = osd->extent->height + osd->shadow_offset + 2 *
         osd->outline_offset;
@@ -288,60 +293,6 @@ event_loop(void *osdv)
       osd->line_bitmap = XCreatePixmap(osd->display, osd->window,
                                        osd->screen_width, osd->height,
                                        osd->depth);
-    }
-    /* Show display requested. */
-    if (osd->update & UPD_show) {
-      DEBUG(Dupdate, "UPD_show");
-      if (!osd->mapped) {
-        osd->mapped = 1;
-        XMapRaised(osd->display, osd->window);
-      }
-    }
-    /* The content changed, redraw lines and update XShape unless only colours
-     * where changed. */
-    if (osd->update & (UPD_mask | UPD_lines)) {
-      DEBUG(Dupdate, "UPD_lines");
-      for (line = 0; line < osd->number_lines; line++) {
-        int y = osd->line_height * line;
-#ifdef DEBUG_XSHAPE
-        XSetForeground(osd->display, osd->gc, osd->outline_pixel);
-        XFillRectangle(osd->display, osd->line_bitmap, osd->gc, 0,
-                       0, osd->screen_width, osd->line_height);
-#endif
-        if (osd->update & UPD_mask) {
-          XFillRectangle(osd->display, osd->mask_bitmap, osd->mask_gc_back, 0,
-                         0, osd->screen_width, osd->line_height);
-        }
-        switch (osd->lines[line].type) {
-        case LINE_text:
-          draw_text(osd, line);
-          break;
-        case LINE_percentage:
-        case LINE_slider:
-          draw_bar(osd, line);
-        case LINE_blank:
-          break;
-        }
-#ifndef DEBUG_XSHAPE
-        /* More than colours was changed, update XShape. */
-        if (osd->update & UPD_mask) {
-          DEBUG(Dupdate, "UPD_mask");
-          XShapeCombineMask(osd->display, osd->window, ShapeBounding, 0, y,
-                            osd->mask_bitmap, ShapeUnion);
-        }
-#endif
-        XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc, 0, 0,
-                  osd->screen_width, osd->line_height, 0, y);
-#ifndef DEBUG_XSHAPE
-        if (osd->update & UPD_mask) {
-          XCopyPlane(osd->display, osd->mask_bitmap, osd->mask_bitmap,
-                     osd->mask_gc_back, 0, 0, osd->screen_width,
-                     osd->line_height, 0, 0, (1 << 0));
-          XShapeCombineMask(osd->display, osd->window, ShapeBounding, 0, y,
-                            osd->mask_bitmap, ShapeSubtract);
-        }
-#endif
-      }
     }
     /* H/V offset or vertical positon was changed. Horizontal alignment is
      * handles internally as line realignment with UPD_content. */
@@ -368,13 +319,54 @@ event_loop(void *osdv)
       }
       XMoveWindow(osd->display, osd->window, x, y);
     }
-    /* Hide display requested. */
-    if (osd->update & UPD_hide) {
-      DEBUG(Dupdate, "UPD_hide");
-      if (osd->mapped) {
-        XUnmapWindow(osd->display, osd->window);
-        osd->mapped = 0;
+    /* If the content changed, redraw lines in background buffer.
+     * Also update XShape unless only colours were changed. */
+    if (osd->update & (UPD_mask | UPD_lines)) {
+      DEBUG(Dupdate, "UPD_lines");
+      for (line = 0; line < osd->number_lines; line++) {
+        int y = osd->line_height * line;
+#ifdef DEBUG_XSHAPE
+        XSetForeground(osd->display, osd->gc, osd->outline_pixel);
+        XFillRectangle(osd->display, osd->line_bitmap, osd->gc, 0,
+                       y, osd->screen_width, osd->line_height);
+#endif
+        if (osd->update & UPD_mask) {
+          XFillRectangle(osd->display, osd->mask_bitmap, osd->mask_gc_back, 0,
+                         y, osd->screen_width, osd->line_height);
+        }
+        switch (osd->lines[line].type) {
+        case LINE_text:
+          draw_text(osd, line);
+          break;
+        case LINE_percentage:
+        case LINE_slider:
+          draw_bar(osd, line);
+        case LINE_blank:
+          break;
+        }
       }
+    }
+#ifndef DEBUG_XSHAPE
+    /* More than colours was changed, also update XShape. */
+    if (osd->update & UPD_mask) {
+      DEBUG(Dupdate, "UPD_mask");
+      XShapeCombineMask(osd->display, osd->window, ShapeBounding, 0, 0,
+                        osd->mask_bitmap, ShapeSet);
+    }
+#endif
+    /* Show display requested. */
+    if (osd->update & UPD_show) {
+      DEBUG(Dupdate, "UPD_show");
+      if (!osd->mapped) {
+        osd->mapped = 1;
+        XMapRaised(osd->display, osd->window);
+      }
+    }
+    /* Copy content, if window was changed or exposed. */
+    if (osd->mapped && osd->update & (UPD_size | UPD_pos | UPD_lines | UPD_show)) {
+      DEBUG(Dupdate, "UPD_copy");
+      XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc, 0, 0,
+                osd->screen_width, osd->height, 0, 0);
     }
     /* Flush all pennding X11 requests, if any. */
     if (osd->update & ~UPD_timer) {
@@ -440,17 +432,17 @@ event_loop(void *osdv)
         DEBUG(Dvalue, "expose %d: x=%d y=%d w=%d h=%d", report.xexpose.count,
               report.xexpose.x, report.xexpose.y, report.xexpose.width,
               report.xexpose.height);
+#if 0
         if (report.xexpose.count == 0) {
-          /*
-             int ytop, ybot;
-             ytop = report.xexpose.y / osd->line_height;
-             ybot = (report.xexpose.y + report.xexpose.height) / osd->line_height;
-             do {
-             osd->lines[ytop].width = -1;
-             } while (ytop++ < ybot);
-           */
-          osd->update |= UPD_lines;
+          int ytop, ybot;
+          ytop = report.xexpose.y / osd->line_height;
+          ybot = (report.xexpose.y + report.xexpose.height) / osd->line_height;
+          do {
+            osd->lines[ytop].width = -1;
+          } while (ytop++ < ybot);
         }
+#endif
+        XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc, report.xexpose.x, report.xexpose.y, report.xexpose.width, report.xexpose.height, report.xexpose.x, report.xexpose.y);
         break;
       case NoExpose:
       default:

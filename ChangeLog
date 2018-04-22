@@ -1,4 +1,9 @@
-
+2.2.11:
+	Applied two more patches from the debian maintainer. The first
+	fixes a bug introduced by a patch in 2.2.9 and the second reorders
+	the main xodf event loop. These patches appear to have increased
+	xosd's speed.
+	
 2.2.10: 
 	Applied two patches from debian maintainer. The first fixes an
 	alignment problem in libxosd and the second fixes a locale problem
