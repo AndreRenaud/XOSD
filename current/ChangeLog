@@ -1,3 +1,10 @@
+
+2.2.7:
+	Complete rewrite of timeout_func to avoid sending
+	  lineakd to 100% CPU. There was a case where timeout_func 
+	  would keep looping around in circles never pausing for breath.
+	  (Tim Wright)
+
 2.2.6:
         FontSet fixes (Philipp Matthias Hahn)
 	Title change fix (Philipp Matthias Hahn)

@@ -1,0 +1,18 @@
+Unordered TODOs
+---------------
+* Documentation on http://ldots.org/xosd-guide/
+* More Xinerema configuration:
+  - Use Xinerama at all ?
+  - Which screen(s) to use ?
+  - libxinerama or libxinerama_pic ?
+* Find memory leak #191749.
+  - xmms uses static variables in functions get_config_path(), which leaks.
+  - Many X11 calls.
+* Co-op with screensavers #145417.
+* Write a note about broken woody version.
+  - Broken locales.
+  - Busy waiting.
+
+* There's a bug in libtool that updates libtool when configure is run. This 
+	stuffs the Mandrake maintainer. Gotta update libtool when a new version 
+	is out.
