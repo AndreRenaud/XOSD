@@ -1,3 +1,8 @@
+2.2.4:  outline/shadow cut fix (Tomas Janousek)
+	xmms_plugin: added outline (Ondrej Novy)
+		     added playlist_pos/playlist_length (Ondrej Novy)
+ 		     added time_pos on pause (Ondrej Novy)
+ 	added outline to draw_bar and shadow fix (Ondrej Novy)
 
 2.2.3:
         Alignment patch (Philipp Matthias Hahn)

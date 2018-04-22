@@ -30,8 +30,8 @@ static GtkToggleButton
 	*stop_on,  *repeat_on,
 	*shuffle_on;
 static GtkWidget *configure_win;
-static GtkObject *timeout_obj, *offset_obj, *h_offset_obj, *shadow_obj;
-static GtkWidget *timeout_spin,*offset_spin, *h_offset_spin, *shadow_spin;
+static GtkObject *timeout_obj, *offset_obj, *h_offset_obj, *shadow_obj, *outline_obj;
+static GtkWidget *timeout_spin,*offset_spin, *h_offset_spin, *shadow_spin, *outline_spin;
 static GtkWidget *positions[3][3];
 
 /*
@@ -71,6 +71,7 @@ configure_apply_cb (gpointer data)
 	offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (offset_spin));
 	h_offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (h_offset_spin));
 	shadow_offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (shadow_spin));
+	outline_offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (outline_spin));
 
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_top][XOSD_left])))
 	{
@@ -370,18 +371,37 @@ configure (void)
 	gtk_label_set_justify (GTK_LABEL (unit_label), GTK_JUSTIFY_LEFT);
 	gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);
 
+	/* Outline Offset */
+	label = gtk_label_new ("Outline Offset:");
+	gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.0);
+	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_LEFT);
+	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 4, 5,
+			GTK_FILL, GTK_FILL, 0, 0);
+	hbox = gtk_hbox_new (FALSE, 6);
+	gtk_table_attach (GTK_TABLE (table), hbox, 1, 2, 4, 5,
+			GTK_FILL, GTK_FILL, 0, 0);
+	outline_obj = gtk_adjustment_new (timeout, 0, 60, 1, 1, 1);
+	outline_spin = gtk_spin_button_new (GTK_ADJUSTMENT (outline_obj), 1.0, 0);
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (outline_spin),
+			(gfloat) outline_offset);
+	gtk_box_pack_start (GTK_BOX (hbox), outline_spin, FALSE, FALSE, 0);
+	unit_label = gtk_label_new ("pixels");
+	gtk_misc_set_alignment (GTK_MISC (unit_label), 0.0, 0.0);
+	gtk_label_set_justify (GTK_LABEL (unit_label), GTK_JUSTIFY_LEFT);
+	gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);
+
 	/* Position */
 	label = gtk_label_new ("Position:");
 	gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.0);
 	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_LEFT);
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 4, 5,
+	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 5, 6,
 			GTK_FILL, GTK_FILL, 0, 0);
 
 	position_icons = position_icons_new ();
 	position_table = gtk_table_new (3, 3, FALSE);
 	gtk_table_set_row_spacings (GTK_TABLE(position_table), 6);
 	gtk_table_set_col_spacings (GTK_TABLE(position_table), 6);
-	gtk_table_attach (GTK_TABLE (table), position_table, 1, 2, 4, 5,
+	gtk_table_attach (GTK_TABLE (table), position_table, 1, 2, 5, 6,
 			GTK_FILL, GTK_FILL, 0, 0);
 
 	curr_pos = XOSD_top;

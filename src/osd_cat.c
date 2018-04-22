@@ -166,23 +166,22 @@ fprintf (stderr, "\nWith no FILE, or when FILE is -, read standard input.\n");
 		fprintf (stderr, "Error initializing osd: %s\n", xosd_error);
 		return EXIT_FAILURE;
     }
-
+	xosd_set_shadow_offset(osd, shadow);
+	xosd_set_shadow_colour(osd, shadow_colour);
+	xosd_set_outline_offset(osd, outline_offset);
+	xosd_set_outline_colour(osd, outline_colour);
+	xosd_set_colour(osd, colour);
+	xosd_set_timeout(osd, delay);
+	xosd_set_pos(osd, pos);
+	xosd_set_vertical_offset(osd, voffset);
+	xosd_set_horizontal_offset(osd, hoffset);
+	xosd_set_align(osd, align);
 	if (xosd_set_font(osd, font))
     {
 		/* This is critical, because fontset=NULL, will segfault later! */
 		fprintf (stderr, "ABORT: %s\n", xosd_error);
 		return EXIT_FAILURE;
     }
-	xosd_set_colour(osd, colour);
-	xosd_set_timeout(osd, delay);
-	xosd_set_pos(osd, pos);
-	xosd_set_vertical_offset(osd, voffset);
-	xosd_set_horizontal_offset(osd, hoffset);
-	xosd_set_shadow_offset(osd, shadow);
-	xosd_set_shadow_colour(osd, shadow_colour);
-	xosd_set_outline_offset(osd, outline_offset);
-	xosd_set_outline_colour(osd, outline_colour);
-	xosd_set_align(osd, align);
 	/* Not really needed, but at least we aren't throwing around an unknown value */
 	old_age.tv_sec=0;
 

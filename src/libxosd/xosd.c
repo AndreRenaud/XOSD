@@ -146,6 +146,7 @@ static void draw_bar(xosd *osd, Drawable d, GC gc, int x, int y,
 	int barw, barh;
 	int nbars, on, i;
 	int so = osd->shadow_offset;
+	int ox;
 	assert (osd);
 
 	barh = -osd->extent->y;
@@ -154,10 +155,10 @@ static void draw_bar(xosd *osd, Drawable d, GC gc, int x, int y,
 	//check how to behave
 	if (osd->bar_length == -1) {
 		nbars = (osd->screen_width * SLIDER_WIDTH) / barw;
-		on    = nbars * percent / 100;
+		on    = ((nbars-is_slider) * percent) / 100;
 	} else {
 		nbars = osd->bar_length;
-		on    = (nbars * percent) / 100 ;
+    		on    = ((nbars-is_slider) * percent) / 100;
 
 		DEBUG("percent=%d, nbars==%d, on == %d", percent, nbars, on);
 
@@ -175,7 +176,7 @@ static void draw_bar(xosd *osd, Drawable d, GC gc, int x, int y,
 				break;
 		}
 	}
-
+	ox=x;
 
 	for (i = 0; i < nbars; x += barw, i++) {
 		int w = barw, h = barh;
@@ -189,13 +190,32 @@ static void draw_bar(xosd *osd, Drawable d, GC gc, int x, int y,
 			h /= 3;
 			yy += h;
 		}
-		XFillRectangle(osd->display, d, gc, x, yy, w, h);
+		if (osd->outline_offset)
+		{
+		 if (set_color) XSetForeground (osd->display, gc, osd->outline_pixel);
+		 XFillRectangle(osd->display, d, gc, x-osd->outline_offset, yy-osd->outline_offset, w+(2*osd->outline_offset), h+(2*osd->outline_offset));
+                 if (set_color) XSetForeground (osd->display, gc, osd->pixel);
+		}
 		if (so) {
-			if (set_color) XSetForeground (osd->display, gc, BlackPixel(osd->display, osd->screen));
-			XFillRectangle(osd->display, d, gc, x + w, yy + so, so, h);
-			XFillRectangle(osd->display, d, gc, x + so, yy + h, w - so, so);
+			if (set_color) XSetForeground (osd->display, gc, osd->shadow_pixel);
+			XFillRectangle(osd->display, d, gc, x + so, yy + so, w, h);
 			if (set_color) XSetForeground (osd->display, gc, osd->pixel);
 		}
+	}
+	x=ox;
+	for (i = 0; i < nbars; x += barw, i++) {
+		int w = barw, h = barh;
+		int yy = y;
+
+		if (is_slider ? i == on : i < on) {
+			w *= SLIDER_WIDTH-0.1;
+		}
+		else {
+			w *= SLIDER_WIDTH;
+			h /= 3;
+			yy += h;
+		}
+		XFillRectangle(osd->display, d, gc, x, yy, w, h);
 	}
 }
 
@@ -227,6 +247,7 @@ static void expose_line(xosd *osd, int line)
 {
 	int x = 10;
 	int y = osd->line_height * line;
+	int i;
 	xosd_line *l = &osd->lines[line];
 	assert (osd);
 
@@ -256,6 +277,7 @@ static void expose_line(xosd *osd, int line)
 					break;
 			}
 
+			osd->extent->y -= osd->outline_offset;
 			if (osd->shadow_offset) {
 
 				XSetForeground (osd->display, osd->gc, osd->shadow_pixel);
@@ -270,25 +292,41 @@ static void expose_line(xosd *osd, int line)
 			if (osd->outline_offset) {
 				XSetForeground (osd->display, osd->gc, osd->outline_pixel);
 
+				for (i=1; i<=osd->outline_offset; i++) {
+					draw_with_mask(osd, l, x + i, y,
+								   i - osd->extent->y);
+					
+					draw_with_mask(osd, l, x + i, y,
+								   - i - osd->extent->y);
 
-				draw_with_mask(osd, l, x + osd->outline_offset, y,
-							   osd->outline_offset - osd->extent->y);
-				
-				draw_with_mask(osd, l, x + osd->outline_offset, y,
-							   - osd->outline_offset - osd->extent->y);
+					
+					draw_with_mask(osd, l, x - i, y,
+								   - i - osd->extent->y);
+					
+					draw_with_mask(osd, l, x - i, y,
+								   i - osd->extent->y);
 
-				
-				draw_with_mask(osd, l, x - osd->outline_offset, y,
-							   - osd->outline_offset - osd->extent->y);
-				
-				draw_with_mask(osd, l, x - osd->outline_offset, y,
-							   osd->outline_offset - osd->extent->y);
+
+
+					draw_with_mask(osd, l, x, y,
+								   i - osd->extent->y);
+					
+					draw_with_mask(osd, l, x, y,
+								   - i - osd->extent->y);
+
+					
+					draw_with_mask(osd, l, x + i, y,
+								   - osd->extent->y);
+					
+					draw_with_mask(osd, l, x - i, y,
+								   - osd->extent->y);
+				}
 			}
 
 			XSetForeground (osd->display, osd->gc, osd->pixel);
 
 			draw_with_mask(osd, l, x, y, -osd->extent->y);
-			
+			osd->extent->y += osd->outline_offset;
 			XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc, 0, 0,
 					  osd->screen_width, osd->line_height, 0, y);
 			break;
@@ -502,7 +540,7 @@ static int set_font (xosd *osd, const char *font) /* Requires mutex lock. */
 	extents = XExtentsOfFontSet(osd->fontset);
 	osd->extent = &extents->max_logical_extent;
 
-	osd->line_height = osd->extent->height + osd->shadow_offset;
+	osd->line_height = osd->extent->height + osd->shadow_offset + 2*osd->outline_offset;
 	osd->height = osd->line_height * osd->number_lines;
 	for (line = 0; line < osd->number_lines; line++) {
 		xosd_line *l = &osd->lines[line];
@@ -1133,6 +1171,7 @@ int xosd_set_shadow_offset (xosd *osd, int shadow_offset)
 {
 	if (osd == NULL) return -1;
 
+	if (shadow_offset<0) return -1;
 	pthread_mutex_lock (&osd->mutex);
 	osd->shadow_offset = shadow_offset;
 	force_redraw (osd, -1);
@@ -1144,7 +1183,8 @@ int xosd_set_shadow_offset (xosd *osd, int shadow_offset)
 int xosd_set_outline_offset (xosd *osd, int outline_offset)
 {
 	if (osd == NULL) return -1;
-
+	
+	if (outline_offset<0) return -1;
 	pthread_mutex_lock (&osd->mutex);
 	osd->outline_offset = outline_offset;
 	force_redraw (osd, -1);

@@ -65,6 +65,7 @@ gint timeout;
 gint offset;
 gint h_offset;
 gint shadow_offset;
+gint outline_offset;
 gint pos;
 gint align;
 
@@ -183,6 +184,7 @@ read_config (void)
 	offset = 50;
 	h_offset = 0;
 	shadow_offset = 1;
+	outline_offset = 0;
 	pos = XOSD_bottom;
 	align = XOSD_left;
 
@@ -194,6 +196,7 @@ read_config (void)
 		xmms_cfg_read_int (cfgfile, "osd", "offset", &offset);
 		xmms_cfg_read_int (cfgfile, "osd", "h_offset", &h_offset);
 		xmms_cfg_read_int (cfgfile, "osd", "shadow_offset", &shadow_offset);
+		xmms_cfg_read_int (cfgfile, "osd", "outline_offset", &outline_offset);
 		xmms_cfg_read_int (cfgfile, "osd", "pos", &pos);
 		xmms_cfg_read_int (cfgfile, "osd", "align", &align);
 		xmms_cfg_read_int (cfgfile, "osd", "show_volume", &show.volume );
@@ -233,6 +236,7 @@ write_config (void)
 		xmms_cfg_write_int (cfgfile, "osd", "offset", offset);
 		xmms_cfg_write_int (cfgfile, "osd", "h_offset", h_offset);
 		xmms_cfg_write_int (cfgfile, "osd", "shadow_offset", shadow_offset);
+		xmms_cfg_write_int (cfgfile, "osd", "outline_offset", outline_offset);
 		xmms_cfg_write_int (cfgfile, "osd", "pos", pos);
 		xmms_cfg_write_int (cfgfile, "osd", "align", align);
 
@@ -257,17 +261,18 @@ apply_config (void)
 	DEBUG("apply_config");
 	if (osd)
 	{
-		if (xosd_set_font (osd, font) == -1)
-		{
-			DEBUG("invalid font %s", font);
-		}
 		xosd_set_colour (osd, colour);
 		xosd_set_timeout (osd, timeout);
 		xosd_set_vertical_offset (osd, offset);
 		xosd_set_horizontal_offset (osd, h_offset);
 		xosd_set_shadow_offset (osd, shadow_offset);
+		xosd_set_outline_offset (osd, outline_offset);
 		xosd_set_pos (osd, pos);
 		xosd_set_align (osd, align);
+		if (xosd_set_font (osd, font) == -1)
+		{
+			DEBUG("invalid font %s", font);
+		}
 	}
 	DEBUG("done");
 }
@@ -317,6 +322,7 @@ timeout_func (gpointer data)
 	struct state current;
 	char *text = NULL;
 	char *title = NULL;
+        char *title2 = NULL;
 
 	DEBUG("timeout func");
 
@@ -332,6 +338,7 @@ timeout_func (gpointer data)
 	current.pos = xmms_remote_get_playlist_pos (gp.xmms_session);
 	current.volume = xmms_remote_get_main_volume (gp.xmms_session);
 	current.balance = (xmms_remote_get_balance (gp.xmms_session) + 100) / 2;
+	
 
 	/* Get the current title only if the playlist is not empty. Otherwise
 	 * it'll crash. Don't forget to free the title! */
@@ -361,11 +368,18 @@ timeout_func (gpointer data)
 			 (g_strcasecmp (previous.title, current.title) != 0)))
 	{
 		if (show.trackname)
-			title = current.title;
+		{
+		 title=current.title;
+		 if (title!=NULL)
+		 {
+       	          title2=malloc(strlen(current.title)+26);
+		  sprintf(title2,"%i/%i: %s",xmms_remote_get_playlist_pos (gp.xmms_session)+1,xmms_remote_get_playlist_length (gp.xmms_session),current.title);
+		 }
+ 		}
 	}
 
 	/* Determine right text depending on state and title change. */
-	if (!current.playing && (title || previous.playing))
+	if (!current.playing && (title2 || previous.playing))
 	{
 		if (show.stop)
 			text = "Stopped";
@@ -373,14 +387,24 @@ timeout_func (gpointer data)
 	else if (!previous.paused && current.paused)
 	{
 		if (show.pause)
+		{
 			text = "Paused";
+			if (show.trackname)
+			{
+			    if (current.title!=NULL)
+			    {
+	    	             title2=malloc(strlen(current.title)+52);
+			     sprintf(title2,"%i/%i: %s (%.2i:%.2i)",xmms_remote_get_playlist_pos (gp.xmms_session)+1,xmms_remote_get_playlist_length (gp.xmms_session),current.title,xmms_remote_get_output_time(gp.xmms_session)/1000/60,xmms_remote_get_output_time(gp.xmms_session)/1000%60);
+			    }
+			}
+		}
 	}
 	else if (previous.paused && !current.paused)
 	{
 		if (show.pause)
 			text = "Unpaused";
 	}
-	else if (current.playing && (title || !previous.playing))
+	else if (current.playing && (title2 || !previous.playing))
 	{
 		text = "Play";
 	}
@@ -389,7 +413,7 @@ timeout_func (gpointer data)
 	if (text)
 	{
 		xosd_display (osd, 0, XOSD_string, text);
-		xosd_display (osd, 1, XOSD_string, title ? title : "");
+		xosd_display (osd, 1, XOSD_string, title2 ? title2 : "");
 	}
 	else if (current.volume != previous.volume && show.volume)
 	{
@@ -412,6 +436,8 @@ timeout_func (gpointer data)
 		xosd_display (osd, 1, XOSD_string, current.shuffle ? "On" : "Off");
 	}
 
+	if (title2) free(title2);
+
 	/* copy current state (including title) for future comparison. Free old
 	 * title first. */
 	if (previous.title)
@@ -420,6 +446,7 @@ timeout_func (gpointer data)
 
 	GDK_THREADS_LEAVE ();
 
+    
 	return TRUE;
 }
 /* vim: tabstop=8 shiftwidth=8 noexpandtab

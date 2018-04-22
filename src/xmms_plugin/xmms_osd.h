@@ -29,6 +29,7 @@ extern gint timeout;
 extern gint offset;
 extern gint h_offset;
 extern gint shadow_offset;
+extern gint outline_offset;
 extern gint pos;
 extern gint align;
 
