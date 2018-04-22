@@ -64,8 +64,9 @@ static void init(void)
    previous_volume = previous_length = previous_song = 
       0;   
 
-   osd = xosd_init (font, colour, timeout, XOSD_bottom, offset);
-   timeout_tag = gtk_timeout_add (100, timeout_func, NULL);
+   osd = xosd_init (font, colour, timeout, pos, offset);
+   if (osd)
+      timeout_tag = gtk_timeout_add (100, timeout_func, NULL);
    }
 
 static void cleanup(void)
@@ -92,7 +93,7 @@ static void read_config (void)
    g_free (font);
    colour = NULL;
    font = NULL;
-   timeout = 0;
+   timeout = 3;
    offset = 50;
    pos = XOSD_bottom;
    
@@ -110,8 +111,6 @@ static void read_config (void)
       font = g_strdup ("fixed");
    if (colour == NULL)
       colour = g_strdup ("green");
-   if (timeout <= 0)
-      timeout = 3;
    }
 
 static void configure_ok_cb (gpointer data)

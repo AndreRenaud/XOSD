@@ -26,7 +26,7 @@ int xosd_show (xosd *osd);
 
 int xosd_set_pos (xosd *osd, xosd_pos pos);
 int xosd_set_offset (xosd *osd, int offset);	 
-int xosd_set_timeout (xosd *osd, int timeout);
+int xosd_set_timeout (xosd *osd, int timeout); /* set timeout to -1 to never timeout */
 int xosd_set_colour (xosd *osd, char *colour);
 int xosd_set_font (xosd *osd, char *font);
 int xosd_get_colour (xosd *osd, int *red, int *green, int *blue);

@@ -1,0 +1,95 @@
+..\" Emacs, -*- nroff -*- please
+..TH XOSD 3xosd "December 2000" "X OSD Library"
+..SH NAME
+xosd - X on-screen display library
+..SH SYNOPSIS
+..nf
+..B #include <xosd.h>
+..sp
+..BI "xosd* xosd_init(char * " font ", char * " colour ", int " timeout , 
+..BI "		     xosd_pos " pos ", int " offset );
+..sp
+..BI "int xosd_uninit (xosd* " osd );
+..sp
+..BI "int xosd_display (xosd* " osd ", int " line ,
+..BI "                  xosd_command " command ", " ... );
+..sp
+..BI "int xosd_hide (xosd* " osd );
+..sp
+..BI "int xosd_show (xosd* " osd );
+..sp
+..BI "int xosd_set_pos (xosd* " osd ", xosd_pos " pos );
+..sp
+..BI "int xosd_set_offset (xosd* " osd ", int " offset );
+..sp
+..BI "int xosd_set_timeout (xosd* " osd ", int " timeout );
+..sp
+..BI "int xosd_set_font (xosd* " osd ", char* " font );
+..sp
+..BI "int xosd_set_colour (xosd* " osd ", char* " colour );
+..sp
+..BI "int xosd_get_colour (xosd* " osd ,
+..BI "                     int* " red ", int* " green ", int* " blue );
+..fi
+
+..SH ARGUMENTS
+..IP \fIfont\fP 1i
+String with a font name (in XLFD format)
+..IP \fIcolour\fP 1i
+A color name string (in a format which
+..BI XParseColor (3x)
+recognises)
+..IP \fItimeout\fP 1i
+Time the text will be on screen before it gets removed.
+..IP \fIpos\fP 1i
+One of
+..B XOSD_top
+or
+..B XOSD_bottom
+(for the top or the bottom of the screen)
+..IP \fIoffset\fP 1i
+Offset from the top or bottom of the screen.
+..IP \fIosd\fP 1i
+The on-screen display object to act on.
+
+..SH DESCRIPTION
+xosd is a library for displaying an on-screen display (like the one on
+many TVs) on your X display.
+..sp
+The latest version can be found on
+http://www.ignavus.net/software.html
+..PP
+It is distributed under the GNU General Public License.
+
+..SH BUGS
+If you change the font on the fly (using the
+..B xosd_set_font
+function), and the new font is larger than the old one, the new font
+will be clipped. This bug will be fixed in an upcoming release.
+
+..SH EXAMPLE
+..nf
+#include <xosd.h>
+
+int main (int argc, char *argv[])
+{
+	xosd *osd;
+   
+	osd = xosd_init ("fixed", "LawnGreen", 3, XOSD_top, 0);
+   
+	xosd_display (osd, 0, XOSD_string, "Example XOSD output");
+
+	sleep (5);
+	xosd_uninit (osd);
+   
+	return EXIT_SUCCESS;
+}
+..fi
+
+..SH AUTHOR
+Martijn van de Streek <martijn@foodfight.org>
+..PP
+xosd was written by Andre Renaud <andre@ignavus.net>
+..SH SEE ALSO
+More information on the X OSD Library and its author can be found on
+http://www.ignavus.net/software.html

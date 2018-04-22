@@ -22,6 +22,11 @@ int main (int argc, char *argv[])
       fp = stdin;
    
    osd = xosd_init ("fixed", "red", 5, XOSD_top, 0);
+   if (!osd)
+      {
+      fprintf (stderr, "Error initializing osd\n");
+      return EXIT_FAILURE;
+      }
    
    while (!feof (fp))
       {
