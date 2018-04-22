@@ -1,3 +1,8 @@
+2.2.12: 
+	Applied three patches from the debian maintainer. The first cleans
+	up file handles, the second fixes a man page, the third fixes a
+	centering bug, and the last fixes a deadlock.
+
 2.2.11:
 	Applied two more patches from the debian maintainer. The first
 	fixes a bug introduced by a patch in 2.2.9 and the second reorders
