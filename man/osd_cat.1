@@ -4,56 +4,72 @@
 osd_cat - X on-screen file displayer
 .SH SYNOPSIS
 .B osd_cat
-[\fIOPTION\fR] [\fIFILE\fR]...
+[\fIOPTION\fP] [\fIFILE\fP]...
+.br
+.B osd_cat
+.BR \-b\ percentage | slider
+[\fIOPTION\fP]
 .SH DESCRIPTION
 .PP
 .\" Add any additional description here
 .PP
 Display FILE, or standard input, on X screen.
 .TP
-\fB\-p\fR, \fB\-\-pos\fR=\fIPOS\fR
-This option tells osd_cat where to display the text. TPOS can be top, middle, or bottom. The 
-default is \fItop\fR.
+\fB\-p\fP, \fB\-\-pos\fP=\fIPOS\fP
+This option tells \fBosd_cat\fP where to display the text. \fIPOS\fP can be \fBtop\fP, \fBmiddle\fP, or \fBbottom\fP. The 
+default is \fBtop\fP.
 .TP
-\fB\-o\fR, \fB\-\-offset\fR=\fIOFFSET\fR
-This option specifies the offset from the top or bottom of screen the text is 
-displayed. The default is \fI0
+\fB\-o\fP, \fB\-\-offset\fP=\fIOFFSET\fP
+This option specifies the \fIoffset\fP from the top or bottom of screen the text is 
+displayed. The default is \fB0\fP.
 .TP
-\fB\-A\fR, \fB\-\-align\fR=\fIALIGN\fR
-This option tells osd_cat where to display the text. TPOS can be left, right or center. The 
-default is \fIcenter\fR.
+\fB\-A\fP, \fB\-\-align\fP=\fIALIGN\fP
+This option tells \fBosd_cat\fP where to display the text. \fIALIGN\fP can be \fBleft\fP, \fBright\fP or \fBcenter\fP. The 
+default is \fBcenter\fP.
 .TP
-\fB\-i\fR, \fB\-\-indent\fR=\fIOFFSET\fR
-This option specifies the indent from the left of screen the text is displayed. The default is \fI0
+\fB\-i\fP, \fB\-\-indent\fP=\fIOFFSET\fP
+This option specifies the \fIindent\fP from the left of screen the text is displayed. The default is \fB0\fP.
 .TP
-\fB\-f\fR, \fB\-\-font\fR=\fIFONT\fR
-This option specifies the font to be used for displaying the text. The default is \fIfixed\fR.
+\fB\-f\fP, \fB\-\-font\fP=\fIFONT\fP
+This option specifies the \fIfont\fP to be used for displaying the text. The default is \fBfixed\fP.
 .TP
-\fB\-c\fR, \fB\-\-color\fR=\fICOLOR\fR
-This option specifies the color to be used for displaying the text. The default is \fIred\fR. 
+\fB\-c\fP, \fB\-\-color\fP=\fICOLOR\fP
+This option specifies the \fIcolor\fP to be used for displaying the text. The default is \fBred\fP. 
 .TP
-\fB\-d\fR, \fB\-\-delay\fR=\fITIME\fR
-This option specifies the number of seconds the text is displayed. The default is \fI5\fR seconds.
+\fB\-d\fP, \fB\-\-delay\fP=\fITIME\fP
+This option specifies the number of seconds the text is displayed. The default is \fB5\fP seconds.
 .TP
-\fB\-l\fR, \fB\-\-lines\fR=\fILINES\fR
-This option specifies the number of lines to scroll the display over. The default is \fI5\fR.
-\fR.
+\fB\-l\fP, \fB\-\-lines\fP=\fILINES\fP
+This option specifies the number of \fIlines\fP to scroll the display over. The default is \fB5\fP.
 .TP
-\fB\-s\fR, \fB\-\-shadow\fR=\fISHADOW\fR
-This option specifies the offset of the text shadow. The default is \fI0\fR, which means no text shadow is created.
+\fB\-s\fP, \fB\-\-shadow\fP=\fIOFFSET\fP
+This option specifies the \fIoffset\fP of the text shadow. The default is \fB0\fP, which means no text shadow is created.
 .TP
-\fB\-a\fR, \fB\-\-age\fR=\fISCROLL_AGE\fR
-This option affects screen redrawing. If SCROLL_AGE seconds pass
+\fB\-a\fP, \fB\-\-age\fP=\fISCROLL_AGE\fP
+This option affects screen redrawing. If \fISCROLL_AGE\fP seconds pass
 before a new line is ready (for example, you're reading from a pipe),
 the display is cleared instead of being scrolled. The default is
-\fI0\fR, which means all lines are added to the scroll.
+\fB0\fP, which means all lines are added to the scroll.
 .TP
-\fB\-w\fR, \fB\-\-wait 
+\fB\-w\fP, \fB\-\-wait 
 This option also affects screen redrawing. When there is data ready to
-be put on screen, this option will cause osd_cat to wait until the
+be put on screen, this option will cause \fBosd_cat\fP to wait until the
 display is clear. An alternative to scrolling.
 .TP
-\fB\-h\fR, \fB\-\-help\fR
+\fB\-b\fP, \fB\-\-barmode\fP=\fITYPE\fP
+Lets you display a percentage or slider bar instead of just text.
+\fITYPE\fP may be \fBpercentage\fP or \fBslider\fP.
+In this mode no text is read from any file, but the following options can be used:
+.TP
+\fB\-P\fP, \fB\-\-percentage\fP=\fIPERCENTAGE\fP
+This option specified the position of the percentage / slider bar.
+\fIPERCENTAGE\fP may be in the range from \fB0\fP to \fB100\fP, the default is \fB50\fP.
+.TP
+\fB\-T\fP, \fB\-\-text\fP=\fITEXT\fP
+This option specifies an optional \fITEXT\fP which gets displayed above the percentage bar.
+The default is empty, so no additional text is displayed.
+.TP
+\fB\-h\fP, \fB\-\-help\fP
 display help (which is often more up to date) and exit
 .PP
 With no FILE, or when FILE is -, read standard input.

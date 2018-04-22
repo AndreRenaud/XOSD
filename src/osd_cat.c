@@ -17,6 +17,7 @@
 #include <sys/time.h>
 
 static struct option long_options[] = {
+  {"help", 0, NULL, 'h'},
   {"font", 1, NULL, 'f'},
   {"color", 1, NULL, 'c'},
   {"colour", 1, NULL, 'c'},
@@ -38,36 +39,33 @@ static struct option long_options[] = {
   {NULL, 0, NULL, 0}
 };
 
+FILE *fp;
+xosd *osd;
+char buffer[1024];
+
+char *font = NULL;
+char *colour = "red";
+char *text = NULL;
+enum { bar_none=0, bar_percentage, bar_slider } barmode = bar_none;
+int percentage = 50;
+int outline_offset = 0;
+char *outline_colour = NULL;
+char *shadow_colour = NULL;
+int delay = 5;
+int forcewait = 0;
+xosd_pos pos = XOSD_top;
+int voffset = 0;
+int hoffset = 0;
+int shadow = 0;
+int scroll_age = 0;
+struct timeval old_age, new_age;
+int screen_line = 0;
+int lines = 5;
+xosd_align align = XOSD_left;
+
 int
 main(int argc, char *argv[])
 {
-  FILE *fp;
-  xosd *osd;
-  char buffer[1024];
-  char *newline;
-
-  char *font = (char *) osd_default_font;
-  char *colour = "red";
-  char *text = "";
-  char *barmode = "percentage";
-  int force_barmode = 0;
-  int bar_line = 0;
-  int percentage = 50;
-  int outline_offset = 0;
-  char *outline_colour = "black";
-  char *shadow_colour = "black";
-  int delay = 5;
-  int forcewait = 0;
-  xosd_pos pos = XOSD_top;
-  int voffset = 0;
-  int hoffset = 0;
-  int shadow = 0;
-  int scroll_age = 0;
-  struct timeval old_age, new_age;
-  int screen_line = 0;
-  int lines = 5;
-  xosd_align align = XOSD_left;
-
   while (1) {
     int option_index = 0;
     int c =
@@ -140,17 +138,20 @@ main(int argc, char *argv[])
       break;
     case 'l':
       lines = atoi(optarg);
+      if (lines <= 0) {
+        fprintf(stderr, "Illegal number of lines: %d\n", lines);
+        return EXIT_FAILURE;
+      }
       break;
 
     case 'b':
-      force_barmode = 1;
       if (strcasecmp(optarg, "percentage") == 0) {
-        barmode = "percentage";
+        barmode = bar_percentage;
       } else if (strcasecmp(optarg, "slider") == 0) {
-        barmode = "slider";
+        barmode = bar_slider;
       } else {
-        fprintf(stderr, "Unknown barmode: %s. Defaulting to 'percentage'.\n",
-                optarg);
+        fprintf(stderr, "Unknown barmode: %s.\n", optarg);
+        return EXIT_FAILURE;
       }
       break;
     case 'P':
@@ -164,106 +165,49 @@ main(int argc, char *argv[])
     case 'h':
     default:
       fprintf(stderr, "Usage: %s [OPTION] [FILE]...\n", argv[0]);
-      fprintf(stderr, "Version: %s \n", XOSD_VERSION);
+      fprintf(stderr, "Version: %s\n", XOSD_VERSION);
       fprintf(stderr,
-              "Display FILE, or standard input, on top of display.\n\n");
-      fprintf(stderr,
-              "  -a, --age           Time in seconds before old scroll lines are discarded\n");
-      fprintf(stderr, "  -p, --pos=(top|middle|bottom)\n");
-      fprintf(stderr,
-              "                      Display at top/middle/bottom of screen. Top is default\n");
-      fprintf(stderr, "  -A, --align=(left|right|center)\n");
-      fprintf(stderr,
-              "                      Display at left/right/center of screen.Left is default\n");
-      fprintf(stderr, "  -f, --font=FONT     Use font (default: %s)\n",
-              osd_default_font);
-      fprintf(stderr, "  -c, --colour=COLOUR Use colour\n");
-      fprintf(stderr, "  -d, --delay=TIME    Show for specified time\n");
-      fprintf(stderr, "  -o, --offset=OFFSET Vertical Offset\n");
-      fprintf(stderr, "  -i, --indent=OFFSET Horizontal Offset\n");
-      fprintf(stderr, "  -h, --help          Show this help\n");
-      fprintf(stderr,
-              "  -s, --shadow=SHADOW Offset of shadow, default is 0 which is no shadow\n");
-      fprintf(stderr, "  -S, --shadowcolour=colour\n");
-      fprintf(stderr,
-              "                      Colour of shadow, default is black\n");
-      fprintf(stderr, "  -O, --outline=SHADOW\n");
-      fprintf(stderr,
-              "                      Offset of outline, default is 0 which is no outline\n");
-      fprintf(stderr, "  -u, --outlinecolour=colour\n");
-      fprintf(stderr,
-              "                      Colour of outline, default is black\n");
-      fprintf(stderr,
-              "  -w, --wait          Delay display even when new lines are ready\n");
-      fprintf(stderr,
-              "  -l, --lines=n       Scroll using n lines. Default is 5.\n\n");
-      fprintf(stderr, "\n  -b, --barmode=(percentage|slider)\n");
-      fprintf(stderr,
-              "                      Lets you display a percentage or slider bar instead of just text.\n");
-      fprintf(stderr,
-              "                      Options may be 'percentage' or 'slider'.\n");
-      fprintf(stderr,
-              "                      Disregards any text or files when used.\n");
-      fprintf(stderr,
-              "                      When this option is used, the following options are also valid.\n");
-      fprintf(stderr, "  -P, --percentage=percentage\n");
-      fprintf(stderr,
-              "                      The length of the percentage bar / slider position (0 to 100).\n");
-      fprintf(stderr,
-              "  -T, --text=text     The text to get displayed above the percentage bar.\n\n");
-      fprintf(stderr,
-              "\nWith no FILE, or when FILE is -, read standard input.\n");
+          "Display FILE, or standard input, on top of display.\n"
+          "\n"
+          "  -h, --help          Show this help\n"
+          "  -p, --pos=(top|middle|bottom)\n"
+          "                      Display at top/middle/bottom of screen. Top is default\n"
+          "  -o, --offset=OFFSET Vertical Offset\n"
+          "  -A, --align=(left|right|center)\n"
+          "                      Display at left/right/center of screen.Left is default\n"
+          "  -i, --indent=OFFSET Horizontal Offset\n"
+          "  -f, --font=FONT     Use font (default: %s)\n",
+          osd_default_font);
+      fprintf(stderr, "  -c, --colour=COLOUR Use colour\n"
+          "  -s, --shadow=OFFSET Offset of shadow, default is 0 which is no shadow\n"
+          "  -S, --shadowcolour=COLOUR\n"
+          "                      Colour of shadow, default is black\n"
+          "  -O, --outline=WIDTH\n"
+          "                      Offset of outline, default is 0 which is no outline\n"
+          "  -u, --outlinecolour=COLOUR\n"
+          "                      Colour of outline, default is black\n"
+          "  -a, --age=TIME      Time in seconds before old scroll lines are discarded\n"
+          "  -l, --lines=N       Scroll using n lines. Default is 5.\n"
+          "  -d, --delay=TIME    Show for specified time\n"
+          "  -w, --wait          Delay display even when new lines are ready\n"
+          "\n"
+          "  -b, --barmode=(percentage|slider)\n"
+          "                      Lets you display a percentage or slider bar instead of just text.\n"
+          "                      Options may be 'percentage' or 'slider'.\n"
+          "                      Disregards any text or files when used.\n"
+          "                      When this option is used, the following options are also valid.\n"
+          "  -P, --percentage=PERCENTAGE\n"
+          "                      The length of the percentage bar / slider position (0 to 100).\n"
+          "  -T, --text=TEXT     The text to get displayed above the percentage bar.\n"
+          "\n\n"
+          "With no FILE, or when FILE is -, read standard input.\n");
       return EXIT_SUCCESS;
     }
   }
 
-  // Beginning of barmode coding
-  if (force_barmode == 1) {
-
-    if (text == "") {
-      osd = xosd_create(1);
-    } else {
-      osd = xosd_create(2);
-    }
-
-    if (!osd) {
-      fprintf(stderr, "Error initializing osd: %s\n", xosd_error);
-      return EXIT_FAILURE;
-    }
-    xosd_set_shadow_offset(osd, shadow);
-    xosd_set_shadow_colour(osd, shadow_colour);
-    xosd_set_outline_offset(osd, outline_offset);
-    xosd_set_outline_colour(osd, outline_colour);
-    xosd_set_colour(osd, colour);
-    xosd_set_timeout(osd, delay);
-    xosd_set_pos(osd, pos);
-    xosd_set_vertical_offset(osd, voffset);
-    xosd_set_horizontal_offset(osd, hoffset);
-    xosd_set_align(osd, align);
-    if (xosd_set_font(osd, font)) {
-      /* This is critical, because fontset=NULL, will segfault later! */
-      fprintf(stderr, "ABORT: %s\n", xosd_error);
-      return EXIT_FAILURE;
-    }
-
-    if (text != "") {
-      bar_line = 1;
-      xosd_display(osd, 0, XOSD_string, text);
-    }
-
-    if (barmode == "percentage") {
-      xosd_display(osd, bar_line, XOSD_percentage, percentage);
-    } else if (barmode == "slider") {
-      xosd_display(osd, bar_line, XOSD_slider, percentage);
-    }
-
-    if (xosd_is_onscreen(osd)) {
-      xosd_wait_until_no_display(osd);
-    }
-    xosd_destroy(osd);
-
-  } else {                      // This is the rest of the original code.  Forgive my messiness, but I couldn't be stuffed re-indenting.
-
+  if (barmode) {
+    osd = xosd_create( (text && *text) ? 2 : 1);
+  } else {
     if ((optind < argc) && strncmp(argv[optind], "-", 2)) {
       if ((fp = fopen(argv[optind], "r")) == NULL) {
         fprintf(stderr, "Unable to open: %s\n", argv[optind]);
@@ -273,75 +217,88 @@ main(int argc, char *argv[])
       fp = stdin;
 
     osd = xosd_create(lines);
-    if (!osd) {
-      fprintf(stderr, "Error initializing osd: %s\n", xosd_error);
-      return EXIT_FAILURE;
-    }
-    xosd_set_shadow_offset(osd, shadow);
-    xosd_set_shadow_colour(osd, shadow_colour);
-    xosd_set_outline_offset(osd, outline_offset);
-    xosd_set_outline_colour(osd, outline_colour);
-    xosd_set_colour(osd, colour);
-    xosd_set_timeout(osd, delay);
-    xosd_set_pos(osd, pos);
-    xosd_set_vertical_offset(osd, voffset);
-    xosd_set_horizontal_offset(osd, hoffset);
-    xosd_set_align(osd, align);
-    if (xosd_set_font(osd, font)) {
-      /* This is critical, because fontset=NULL, will segfault later! */
-      fprintf(stderr, "ABORT: %s\n", xosd_error);
-      return EXIT_FAILURE;
-    }
-    /* Not really needed, but at least we aren't throwing around an unknown value */
-    old_age.tv_sec = 0;
+  }
 
-    if (scroll_age)
-      gettimeofday(&old_age, 0);
+  if (!osd) {
+    fprintf(stderr, "Error initializing osd: %s\n", xosd_error);
+    return EXIT_FAILURE;
+  }
+  xosd_set_shadow_offset(osd, shadow);
+  if (shadow_colour) xosd_set_shadow_colour(osd, shadow_colour);
+  xosd_set_outline_offset(osd, outline_offset);
+  if (outline_colour) xosd_set_outline_colour(osd, outline_colour);
+  if (colour) xosd_set_colour(osd, colour);
+  xosd_set_timeout(osd, delay);
+  xosd_set_pos(osd, pos);
+  xosd_set_vertical_offset(osd, voffset);
+  xosd_set_horizontal_offset(osd, hoffset);
+  xosd_set_align(osd, align);
+  if (font && xosd_set_font(osd, font)) {
+    /* This is critical, because fontset=NULL, will segfault later! */
+    fprintf(stderr, "ABORT: %s\n", xosd_error);
+    return EXIT_FAILURE;
+  }
 
-    while (!feof(fp)) {
-      if (fgets(buffer, sizeof(buffer) - 1, fp)) {
-        /* Should we age the display? */
-        if (scroll_age) {
-          gettimeofday(&new_age, 0);
-          if ((new_age.tv_sec - old_age.tv_sec) > scroll_age) {
-            if (lines > 1)
-              xosd_scroll(osd, xosd_get_number_lines(osd));
-            screen_line = 0;
+  switch (barmode) {
+    case bar_percentage:
+      if (text) xosd_display(osd, 0, XOSD_string, text);
+      xosd_display(osd, text ? 1 : 0, XOSD_percentage, percentage);
+      break;
+    case bar_slider:
+      if (text) xosd_display(osd, 0, XOSD_string, text);
+      xosd_display(osd, text ? 1 : 0, XOSD_slider, percentage);
+      break;
+    case bar_none:
+      /* Not really needed, but at least we aren't throwing around an unknown value */
+      old_age.tv_sec = 0;
+
+      if (scroll_age)
+        gettimeofday(&old_age, 0);
+
+      while (!feof(fp)) {
+        if (fgets(buffer, sizeof(buffer) - 1, fp)) {
+          char *newline = strchr(buffer, '\n');
+          if (newline)
+            newline[0] = '\0';
+
+          /* Enforce delay even when new lines are available */
+          if (forcewait && xosd_is_onscreen(osd))
+            xosd_wait_until_no_display(osd);
+
+          /* If more than scroll_age time passes after the last time somethings
+           * was displayed, clear the full display by scolling off all lines at
+           * once. */
+          if (scroll_age) {
+            gettimeofday(&new_age, 0);
+            if ((new_age.tv_sec - old_age.tv_sec) > scroll_age) {
+              if (lines > 1)
+                xosd_scroll(osd, lines);
+              screen_line = 0;
+            }
           }
-        }
+          /* else scroll of the first line if the display is full. */
+          if (screen_line >= lines) {
+            if (lines > 1)
+              xosd_scroll(osd, 1);
+            screen_line = lines - 1;
+          }
 
-        if (screen_line >= xosd_get_number_lines(osd)) {
-          if (lines > 1)
-            xosd_scroll(osd, 1);
-          screen_line = xosd_get_number_lines(osd) - 1;
-        }
-        if ((newline = strchr(buffer, '\n')))
-          newline[0] = '\0';
+          xosd_display(osd, screen_line++, XOSD_string, buffer);
 
-        if (forcewait && xosd_is_onscreen(osd)) {
-          xosd_wait_until_no_display(osd);
-        }
-
-        xosd_display(osd, screen_line, XOSD_string, buffer);
-        screen_line++;
-      } else {
-        if (!feof(fp)) {
+          old_age.tv_sec = new_age.tv_sec;
+        } else if (!feof(fp)) {
           fprintf(stderr, "Error occured reading input file: %s\n",
-                  strerror(errno));
+              strerror(errno));
           exit(1);
         }
       }
-      old_age.tv_sec = new_age.tv_sec;
-    }
-    fclose(fp);
-
-    if (xosd_is_onscreen(osd)) {
-      xosd_wait_until_no_display(osd);
-    }
-
-    xosd_destroy(osd);
+      fclose(fp);
+      break;
   }
 
+  if (xosd_is_onscreen(osd))
+    xosd_wait_until_no_display(osd);
+  xosd_destroy(osd);
 
   return EXIT_SUCCESS;
 }

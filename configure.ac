@@ -3,7 +3,7 @@ dnl Configure.ac for xosd
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(xosd, 2.2.8)
+AC_INIT(xosd, 2.2.9-pre1)
 AC_CONFIG_SRCDIR(src/testprog.c)
 AM_INIT_AUTOMAKE([no-define])
 
@@ -28,7 +28,7 @@ dnl       AGE = 0;
 dnl }
 LT_CURRENT=4
 LT_AGE=2
-LT_REVISION=8
+LT_REVISION=9
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)

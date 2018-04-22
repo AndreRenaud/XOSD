@@ -7,20 +7,18 @@ extern "C"
 {
 #endif
 
-
+#ifndef __deprecated
 #if ( __GNUC__ == 3 && __GNUC_MINOR__ > 0 ) || __GNUC__ > 3
 #define __deprecated	__attribute__((deprecated))
 #else
 #define __deprecated
 #endif
+#endif
 
-	
 /* Error message when a routine returns failure */
   extern char *xosd_error;
   extern const char *osd_default_font;
   extern const char *osd_default_colour;
-  extern const char *osd_shadow_default_colour;
-  extern const char *osd_outline_default_colour;
 
 /* The XOSD display "object" */
   typedef struct xosd xosd;
@@ -50,7 +48,17 @@ extern "C"
     XOSD_right
   } xosd_align;
 
-/* xosd_init -- Create a new xosd "object"
+/* xosd_create -- Create a new xosd "object"
+ *
+ * ARGUMENTS
+ *     number_lines   Number of lines of the display.
+ *
+ * RETURNS
+ *     A new xosd structure.
+ */
+  xosd *xosd_create(int number_lines);
+
+/* xosd_init -- Create a new xosd "object" -- deprecated by xosd_create
  *
  * ARGUMENTS
  *     font           X Logical Font Descriptor, see "xfontsel".
@@ -63,14 +71,11 @@ extern "C"
  *                    text.
  *     shadow_offset  Number of pixels that the shadow is offset from
  *                    the text.
+ *     number_lines   Number of lines of the display.
  *
  * RETURNS
  *     A new xosd structure.
  */
-
-  xosd *xosd_create(int number_lines);
-
-/* deprecated */
   xosd *__deprecated xosd_init(const char *font, const char *colour,
                                int timeout, xosd_pos pos, int offset,
                                int shadow_offset, int number_lines);
@@ -86,7 +91,15 @@ extern "C"
  */
   int xosd_destroy(xosd * osd);
 
-/* deprecated */
+/* xosd_uninit -- Destroy a xosd "object -- deprecated by xosd_destroy
+ *
+ * ARGUMENTS
+ *     osd  The xosd "object" to destroy.
+ *
+ * RETURNS
+ *   0 on success
+ *  -1 on failure
+ */
   int __deprecated xosd_uninit(xosd * osd);
 
 /* xosd_set_bar_length  -- Set length of percentage and slider bar
@@ -98,11 +111,8 @@ extern "C"
  * RETURNS
  *     -1 on error (invalid xosd object).
  *      0 on success
- *
 */
-
   int xosd_set_bar_length(xosd * osd, int length);
-
 
 /* xosd_display -- Display information
  *
@@ -121,7 +131,6 @@ extern "C"
  *     "XOSD_slider", or the number of characters displayed for
  *     "XOSD_string". -1 is returned on failure.
  */
-
   int xosd_display(xosd * osd, int line, xosd_command command, ...);
 
 /* xosd_is_onscreen -- Returns weather the display is show
@@ -169,13 +178,11 @@ extern "C"
  */
   int xosd_show(xosd * osd);
 
-
-/* xosd_set_pos -- Change the position of the display
+/* xosd_set_pos -- Change the vertical position of the display
  *
  * ARGUMENTS
  *     osd      The xosd "object".
- *     pos      The new position of the display.
- *
+ *     pos      The new position of the display: top middle bottom
  *
  * RETURNS
  *   0 on success
@@ -183,12 +190,11 @@ extern "C"
  */
   int xosd_set_pos(xosd * osd, xosd_pos pos);
 
-/* xosd_set_align -- Change the alignment of the display
+/* xosd_set_align -- Change the horizontal alignment of the display
  *
  * ARGUMENTS
  *     osd      The xosd "object".
- *     align    The new alignment of the display.
- *
+ *     align    The new alignment of the display: left center right
  *
  * RETURNS
  *   0 on success
@@ -201,7 +207,6 @@ extern "C"
  * ARGUMENTS
  *     osd            The xosd "object".
  *     shadow_offset  The new shadow offset in pixels.
- *
  *
  * RETURNS
  *   0 on success
@@ -222,7 +227,6 @@ extern "C"
  *  -1 on failure
 */
   int xosd_set_outline_offset(xosd * osd, int outline_offset);
-
 
 /* xosd_set_outline_colour -- Change the colour of the outline
  *
@@ -250,7 +254,6 @@ extern "C"
  */
   int xosd_set_shadow_colour(xosd * osd, const char *colour);
 
-
 /* xosd_set_horizontal_offset -- Change the number of pixels the display is
  *                    offset from the position
  *
@@ -262,10 +265,8 @@ extern "C"
  * RETURNS
  *   0 on success
  *  -1 on failure
- *
 */
   int xosd_set_horizontal_offset(xosd * osd, int offset);
-
 
 /* xosd_set_vertical_offset -- Change the number of pixels the display is
  *                    offset from the position
@@ -278,7 +279,6 @@ extern "C"
  * RETURNS
  *   0 on success
  *  -1 on failure
- *
 */
   int xosd_set_vertical_offset(xosd * osd, int offset);
 
@@ -287,7 +287,6 @@ extern "C"
  * ARGUMENTS
  *     osd      The xosd "object".
  *     timeout  The number of seconds before the display is hidden.
- *
  *
  * RETURNS
  *   0 on success
