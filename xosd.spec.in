@@ -12,7 +12,7 @@ Summary:	X On-Screen Display libray
 Source:		%name-1.0.0-pre2.tar.gz
 
 # Oron Peled - Remove after adding to the distribution
-Source1:	libxosd-config.in
+Source1:	xosd-config.in
 Source2:	xosd-Makefile.am
 Source3:	xosd-configure.in
 
@@ -47,7 +47,7 @@ A plugin for XMMS
 cp $RPM_SOURCE_DIR/libxosd.m4 .
 cp $RPM_SOURCE_DIR/xosd-Makefile.am Makefile.am
 cp $RPM_SOURCE_DIR/xosd-configure.in configure.in
-cp $RPM_SOURCE_DIR/libxosd-config.in script/libxosd-config.in
+cp $RPM_SOURCE_DIR/xosd-config.in script/xosd-config.in
 
 %build
 # Oron Peled - can be removed after fixes to distro
@@ -82,7 +82,7 @@ ldconfig
 %{_libdir}/libxosd.a
 %{_libdir}/libxosd.la
 %{_includedir}/xosd.h
-%{_bindir}/libxosd-config
+%{_bindir}/xosd-config
 %{aclocaldir}/libxosd.m4
 
 %files xmms

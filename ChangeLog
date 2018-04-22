@@ -1,3 +1,17 @@
+1.0.2: 
+       Autoconf fixes:
+        Cleaned up autoconf scripts (patch from Philipp Matthias Hahn)
+	Changed references to libxosd-config to xosd-config (Tim Wright)
+	Code Clean (Philipp Matthias Hahn)
+	Package Maintainers (that I know about):
+		Debian Package Maintainer is Philipp Matthias Hahn.
+		Mandrake Package Maintainer is Goetz Waschk.
+	Miscellaneous (and many) thanks to the Package Maintainers (Tim Wright)
+	Put the xmms plugin and libxosd libraries in subdirectories of src/.
+	  this was done to emable people to build libxosd without building the xmms
+	  plugin. This might have broken the redhat packaging stuff.
+	  (Tim Wright, based on patch by Mathieu Seigneurin)
+	
 1.0.1:	
 	Merged xosd code-clean and alignment branch (Hans Verkuil's branch)
 	  this branch also implements XOSD_printf, fixes a bug
@@ -7,7 +21,7 @@
 	Better error reporting for osd_cat (Tim Wright)
 	More features in the xmms plugin (Tim Wright)
 	osd_cat alignment option: -A (Tim Wright)
-
+	
 1.0.0:
 	Applied proper xosd-multiline patch (Damien Elmes)
 	Modified xosd_init to take an extra param (the number of lines)

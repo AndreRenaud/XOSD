@@ -8,13 +8,13 @@ dnl Test to see if libxosd is installed, and define LIBXOSD_CFLAGS, LIBXOSDLIBS
 dnl
 AC_DEFUN(AM_PATH_LIBXOSD,
 [dnl
-dnl Get the cflags and libraries from the libxosd-config script
+dnl Get the cflags and libraries from the xosd-config script
 dnl
-AC_ARG_WITH(libxosd-config,
-[  --with-libxosd-config=LIBXOSD_CONFIG  Location of libxosd-config],
+AC_ARG_WITH(xosd-config,
+[  --with-xosd-config=LIBXOSD_CONFIG  Location of xosd-config],
 LIBXOSD_CONFIG="$withval")
 
-AC_PATH_PROG(LIBXOSD_CONFIG, libxosd-config, no)
+AC_PATH_PROG(LIBXOSD_CONFIG, xosd-config, no)
 AC_MSG_CHECKING(for libxosd)
 if test "$LIBXOSD_CONFIG" = "no"; then
   AC_MSG_RESULT(no)

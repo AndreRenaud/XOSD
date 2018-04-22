@@ -42,14 +42,14 @@ typedef enum
  *                    never).
  *     pos            Position to write text (top or bottom).
  *     offset         Number of pixels between the "pos" and the
- *                    text. 
+ *                    text.
  *     shadow_offset  Number of pixels that the shadow is offset from
  *                    the text.
  *
  * RETURNS
  *     A new xosd structure.
  */
-xosd *xosd_init (char *font, char *colour, int timeout, 
+xosd *xosd_init (char *font, char *colour, int timeout,
 		 xosd_pos pos, int offset, int shadow_offset,
 		 int number_lines);
 
@@ -167,7 +167,7 @@ int xosd_set_align (xosd *osd, xosd_align align);
  *   0 on success
  *  -1 on failure
 */
-int xosd_set_shadow_offset (xosd *osd, int shadow_offset);   
+int xosd_set_shadow_offset (xosd *osd, int shadow_offset);
 
 /* xosd_set_offset -- Change the number of pixels the display is
  *                    offset from the position
@@ -182,7 +182,7 @@ int xosd_set_shadow_offset (xosd *osd, int shadow_offset);
  *  -1 on failure
  *
 */
-int xosd_set_offset (xosd *osd, int offset);	 
+int xosd_set_offset (xosd *osd, int offset);
 
 /* xosd_set_timeout -- Change the time before display is hidden.
  *
@@ -246,7 +246,7 @@ int xosd_get_colour (xosd *osd, int *red, int *green, int *blue);
  *   0 on success
  *  -1 on failure
 */
-int xosd_scroll(xosd *osd, int lines); 
+int xosd_scroll(xosd *osd, int lines);
 
 /* xosd_get_number_lines -- Get the maximum number of lines allowed
  *
@@ -254,7 +254,7 @@ int xosd_scroll(xosd *osd, int lines);
  *     osd      The xosd "object".
  *
  * RETURNS
- *   the number of lines on success  
+ *   the number of lines on success
  *  -1 on failure
 */
 int xosd_get_number_lines(xosd* osd);

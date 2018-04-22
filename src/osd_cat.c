@@ -15,7 +15,7 @@ static struct option long_options[] = {
   {"top",    0, NULL, 't'},
   {"bottom", 0, NULL, 'b'},
   {"align",  1, NULL, 'A'},
-  {"shadow", 1, NULL, 's'}, 
+  {"shadow", 1, NULL, 's'},
   {"age",    1, NULL, 'a'},
   {"lines",  1, NULL, 'l'},
   {"wait", 0, NULL, 'w'},
@@ -41,7 +41,7 @@ int main (int argc, char *argv[])
   int screen_line = 0;
   int lines=5;
   xosd_align align=XOSD_left;
-   
+
   while (1)
     {
       int option_index = 0;
@@ -114,7 +114,7 @@ int main (int argc, char *argv[])
 	  return EXIT_SUCCESS;
 	}
     }
-   
+
   if ((optind < argc) && strncmp(argv[optind], "-", 2))
     {
       if ((fp = fopen (argv[optind], "r")) == NULL)
@@ -125,14 +125,14 @@ int main (int argc, char *argv[])
     }
   else
     fp = stdin;
-   
+
   osd = xosd_init (font, color, delay, pos, offset, shadow, lines);
   if (!osd)
     {
       fprintf (stderr, "Error initializing osd: %s\n", xosd_error);
       return EXIT_FAILURE;
     }
-  xosd_set_align (osd, align);   
+  xosd_set_align (osd, align);
   /* Not really needed, but at least we aren't throwing around an unknown value */
   old_age.tv_sec=0;
 
@@ -153,7 +153,7 @@ int main (int argc, char *argv[])
 		  screen_line=0;
 		}
 	    }
-	      
+
 	  if (screen_line >= xosd_get_number_lines(osd))
 	    {
 	      xosd_scroll(osd,1);
@@ -161,7 +161,7 @@ int main (int argc, char *argv[])
 	    }
 	  if ((newline = strchr (buffer, '\n')))
 	    newline[0] = '\0';
-	  
+
 	  if (forcewait && xosd_is_onscreen(osd)) {
 	    xosd_wait_until_no_display(osd);
 	  }
@@ -184,9 +184,9 @@ int main (int argc, char *argv[])
   if (xosd_is_onscreen(osd)) {
     xosd_wait_until_no_display(osd);
   }
-   
+
   xosd_uninit (osd);
-   
+
   return EXIT_SUCCESS;
 }
 /* vim: ai si sw=4
