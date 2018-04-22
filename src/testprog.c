@@ -23,7 +23,41 @@ int main (int argc, char *argv[])
      printerror();
    }
 
-   if (0 != xosd_display (osd, 0, XOSD_string, "Blah")) {
+   if (-1 == xosd_display (osd, 0, XOSD_percentage, 80)) {
+     printerror();
+   }
+   
+   if (0 != xosd_wait_until_no_display(osd)) {
+     printerror();
+   }
+   
+   if (-1 == xosd_display (osd, 0, XOSD_slider, 36)) {
+     printerror();
+   }
+   
+   if (0 != xosd_wait_until_no_display(osd)) {
+     printerror();
+   }
+
+   xosd_set_bar_length(osd, 14);
+   
+   if (-1 == xosd_display (osd, 0, XOSD_percentage, 80)) {
+     printerror();
+   }
+   
+   if (0 != xosd_wait_until_no_display(osd)) {
+     printerror();
+   }
+   
+   if (-1 == xosd_display (osd, 0, XOSD_slider, 36)) {
+     printerror();
+   }
+   
+   if (0 != xosd_wait_until_no_display(osd)) {
+     printerror();
+   }
+   
+   if (-1 == xosd_display (osd, 0, XOSD_string, "Blah")) {
      printerror();
    }
    
@@ -33,13 +67,13 @@ int main (int argc, char *argv[])
    
    sleep (2);
 
-   if (0 != xosd_display (osd, 0, XOSD_string, "blah2")) {
+   if (-1 == xosd_display (osd, 0, XOSD_string, "blah2")) {
      printerror();
    }
 
    sleep (1);
 
-   if (0 != xosd_display (osd, 1, XOSD_string, "wibble")) {
+   if (-1 == xosd_display (osd, 1, XOSD_string, "wibble")) {
      printerror();
    }
 
@@ -49,7 +83,7 @@ int main (int argc, char *argv[])
      printerror();
    }
 
-   if (0 != xosd_display (osd, 1, XOSD_string, "bloggy")) {
+   if (-1 == xosd_display (osd, 1, XOSD_string, "bloggy")) {
      printerror();
    }
 

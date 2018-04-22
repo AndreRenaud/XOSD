@@ -36,7 +36,7 @@
 
 #include "xosd.h"
 
-#define DEBUG(args...) /* fprintf (stderr, "%s: %s: %d: ", __FILE__, __PRETTY_FUNCTION__, __LINE__); fprintf(stderr, args); fprintf(stderr, "\n") */
+#define DEBUG(args...) /*fprintf (stderr, "%s: %s: %d: ", __FILE__, __PRETTY_FUNCTION__, __LINE__); fprintf(stderr, args); fprintf(stderr, "\n")*/
 
 //#ifdef X_HAVE_UTF8_STRING
 //#define XDRAWSTRING Xutf8DrawString
@@ -98,6 +98,7 @@ struct xosd
   int hoffset;
   int voffset;
   int shadow_offset;
+  int bar_length; 
 
   int mapped;
   int done;
@@ -126,8 +127,26 @@ static void draw_bar(xosd *osd, Drawable d, GC gc, int x, int y,
   barh = -osd->extent->y;
   barw = barh / 2;
 
-  nbars = (osd->width * SLIDER_WIDTH) / barw;
-  on = nbars * percent / 100;
+  //check how to behave
+  if (osd->bar_length == -1) {
+    nbars = (osd->width * SLIDER_WIDTH) / barw;
+    on    = nbars * percent / 100;
+  } else {
+    nbars = osd->bar_length;
+    on    = (nbars * percent) / 100 ;
+
+    DEBUG("percent=%d, nbars==%d, on == %d", percent, nbars, on);
+
+    //fix x coord
+    if (osd->align) {
+      if (osd->align == XOSD_right) {
+	x = osd->width - (nbars*barw) - x;
+      } else {
+	x = (osd->width - (nbars*barw)) / 2;
+      }
+    }
+  }
+
 
   for (i = 0; i < nbars; x += barw, i++) {
     int w = barw, h = barh;
@@ -328,7 +347,7 @@ static int display_percentage (xosd *osd, xosd_line *l, int percentage)
   if (osd == NULL) return -1;
 
   if (percentage < 0) percentage = 0;
-  if (percentage > 100) percentage = 100;
+  if (percentage > 100 ) percentage = 100;
 
   l->type = LINE_percentage;
   l->percentage = percentage;
@@ -341,7 +360,7 @@ static int display_slider (xosd *osd, xosd_line *l, int percentage)
   if (osd == NULL) return -1;
 
   if (percentage < 0) percentage = 0;
-  if (percentage > 100) percentage = 100;
+  if (percentage > 100 ) percentage = 100;
 
   l->type = LINE_slider;
   l->percentage = percentage;
@@ -680,6 +699,7 @@ xosd *xosd_create (int number_lines)
   DEBUG("width and height initialization"); 
   osd->width = XDisplayWidth (osd->display, osd->screen); 
   osd->height = osd->line_height * osd->number_lines;
+  osd->bar_length = -1; //init bar_length with -1: draw_bar behaves like unpached
 
   DEBUG("creating X Window"); 
   setwinattr.override_redirect = 1; 
@@ -801,6 +821,20 @@ int xosd_destroy (xosd *osd)
 
   DEBUG("done");
 
+  return 0;
+}
+
+
+int xosd_set_bar_length(xosd *osd, int length) {
+
+  if (osd == NULL) return -1;
+
+  if (length==0) return -1;
+
+  if (length<-1) return -1;
+
+  osd->bar_length = length;
+  
   return 0;
 }
 

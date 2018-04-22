@@ -1,4 +1,12 @@
-
+2.1.0:
+        New xmms plugin! well, actually the plugin from 2.0.0 has been 
+	included as an old plugin. Some people were having trouble with
+	gdk_pixbuf stuff, which is essential for Michael JasonSmith's
+	  new xmms-osd plugin. We might remove this eventually. (Tim Wright)
+        customizable length of slider and percentage patch (Philippe Seewer with
+          modifications by Tim Wright) This patch introduces a new function, 
+	  xosd_set_bar_length, which is why the middle version number increase.
+	
 2.0.2:  
 	xosd_init font related segfault bug fix (Damien Elmes)
 	xosd not resizing properly now and then fix (Damien Elmes)

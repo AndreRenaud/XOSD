@@ -78,6 +78,21 @@ int xosd_destroy (xosd *osd);
 /* deprecated */
 int xosd_uninit (xosd *osd);
 
+/* xosd_set_bar_length  -- Set length of percentage and slider bar
+ *
+ * ARGUMENTS
+ *     osd     The xosd "object"
+ *     length  Desired bar length (set to -1 for old behaviour)
+ *
+ * RETURNS
+ *     -1 on error (invalid xosd object).
+ *      0 on success
+ *
+*/
+  
+int xosd_set_bar_length(xosd *osd, int length);
+   
+
 /* xosd_display -- Display information
  *
  * ARGUMENTS
