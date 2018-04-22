@@ -5,8 +5,6 @@
 	decided to stop forwarding and I wasn't getting any of his
 	emails. <insert rant about university IT departments here>.
 
-	Complete rewrite of libxosd to use only one thread calling X11.
-	osd_cat --age parameter is now optional.
 
 2.2.8:
 	investigated using indent. From now on I'll use these arguments to

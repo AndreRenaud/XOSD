@@ -86,6 +86,8 @@ _draw_bar(xosd * osd, int nbars, int on, XRectangle * p, XRectangle * mod,
 {
   int i;
   XRectangle rs[2];
+  FUNCTION_START(Dfunction);
+
   rs[0].x = rs[1].x = mod->x + p->x;
   rs[0].y = (rs[1].y = mod->y + p->y) + p->height / 3;
   rs[0].width = mod->width + p->width * SLIDER_SCALE;
@@ -97,6 +99,7 @@ _draw_bar(xosd * osd, int nbars, int on, XRectangle * p, XRectangle * mod,
     XFillRectangles(osd->display, osd->mask_bitmap, osd->mask_gc, r, 1);
     XFillRectangles(osd->display, osd->line_bitmap, osd->gc, r, 1);
   }
+  FUNCTION_END(Dfunction);
 }
 static void
 draw_bar(xosd * osd, int line)
@@ -140,6 +143,9 @@ draw_bar(xosd * osd, int line)
 
   DEBUG(Dvalue, "percent=%d, nbars=%d, on=%d", l->value, nbars, on);
 
+  /* adjust the y coordinate based on the line number */
+  p.y += line*osd->line_height;
+
   /* Outline */
   if (osd->outline_offset) {
     m.x = m.y = -osd->outline_offset;
@@ -169,10 +175,12 @@ static void                     /*inline */
 _draw_text(xosd * osd, char *string, int x, int y)
 {
   int len = strlen(string);
+  FUNCTION_START(Dfunction);
   XmbDrawString(osd->display, osd->mask_bitmap, osd->fontset, osd->mask_gc, x,
                 y, string, len);
   XmbDrawString(osd->display, osd->line_bitmap, osd->fontset, osd->gc, x, y,
                 string, len);
+  FUNCTION_END(Dfunction);
 }
 static void
 draw_text(xosd * osd, int line)
@@ -201,6 +209,9 @@ draw_text(xosd * osd, int line)
   case XOSD_left:
     break;
   }
+
+  /* adjust the y coordinate based on the line number */
+  y += line*osd->line_height;
 
   if (osd->shadow_offset) {
     XSetForeground(osd->display, osd->gc, osd->shadow_pixel);
@@ -869,6 +880,7 @@ int
 xosd_display(xosd * osd, int line, xosd_command command, ...)
 {
   int ret = -1;
+  union xosd_line newline = { type: LINE_blank };
   va_list a;
 
   FUNCTION_START(Dfunction);
@@ -886,7 +898,7 @@ xosd_display(xosd * osd, int line, xosd_command command, ...)
   case XOSD_printf:
     {
       char buf[XOSD_MAX_PRINTF_BUF_SIZE];
-      struct xosd_text *l = &osd->lines[line].text;
+      struct xosd_text *l = &newline.text;
       char *string = va_arg(a, char *);
       if (command == XOSD_printf) {
         if (vsnprintf(buf, sizeof(buf), string, a) >= sizeof(buf)) {
@@ -898,19 +910,11 @@ xosd_display(xosd * osd, int line, xosd_command command, ...)
       if (string && *string) {
         ret = strlen(string);
         l->type = LINE_text;
-        if (l->string == NULL) {
-          l->string = malloc(ret + 1);
-        } else {
-          realloc(l->string, ret + 1);
-        }
+        l->string = malloc(ret + 1);
         memcpy(l->string, string, ret + 1);
       } else {
         ret = 0;
         l->type = LINE_blank;
-        if (l->string != NULL) {
-          free(l->string);
-          l->string = NULL;
-        }
         l->width = -1;
       }
       break;
@@ -919,7 +923,7 @@ xosd_display(xosd * osd, int line, xosd_command command, ...)
   case XOSD_percentage:
   case XOSD_slider:
     {
-      struct xosd_bar *l = &osd->lines[line].bar;
+      struct xosd_bar *l = &newline.bar;
       ret = va_arg(a, int);
       ret = (ret < 0) ? 0 : (ret > 100) ? 100 : ret;
       l->type = (command == XOSD_percentage) ? LINE_percentage : LINE_slider;
@@ -935,6 +939,16 @@ xosd_display(xosd * osd, int line, xosd_command command, ...)
   }
 
   _xosd_lock(osd);
+  /* Free old entry */
+  switch (osd->lines[line].type) {
+    case LINE_text:
+      free (osd->lines[line].text.string);
+    case LINE_blank:
+    case LINE_percentage:
+    case LINE_slider:
+      break;
+  }
+  osd->lines[line] = newline;
   osd->update |= UPD_content | UPD_timer | UPD_show;
   _xosd_unlock(osd);
 
