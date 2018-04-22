@@ -14,3 +14,4 @@ AM_CFLAGS=${GTK_CFLAGS}
 
 # Plugins (configure will determine what to build)
 SUBDIRS=libxosd @SELECTED_PLUGINS@ 
+DIST_SUBDIRS=libxosd xmms_plugin xmms_plugin_oldplugin

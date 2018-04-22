@@ -1,16 +1,29 @@
+2.2.0:
+	Man pages for xosd_is_onscreen and xosd_set_bar_length (Michael JasonSmith)
+	Makefile patches (Philipp Matthias Hahn)
+        flickering fix for osd_cat (Michael Stuermer)
+	Change underscores to spaces if xmms config variable is set (James Roberts-Thomson)      
+	Xinerama code fixes (Tim Wright, Philipp Matthias Hahn, Stian Jordet)
+	Spell checked the changelog (Tim Wright)
+	Added support for setting the shadow colour (Tim Wright)
+	Added support for having an outline around the text (Andy Heroff)
+	  it acts strangely for outline widths greater than 2 or so. 
+	  looks cool, but strange.
+	Added support for setting the outline colour (Tim Wright)
+	
 2.1.3:
-       configureable pixmap directory (Philipp Matthias Hahn)
+       configurable pixmap directory (Philipp Matthias Hahn)
        strange pause on stop behaviour fix (Philipp Matthias Hahn)
        ChangeLog name spell fix (Philipp Matthias Hahn)
        Misc configure and automake changes (Philipp Matthias Hahn)
        Update all Makefile.am for AutoMake 1.7.3 (Tim Wright)
        Remembered to run configure with --enable-old-plugin=yes before running
-	'make dist' so that the distubition will have the old plugin 
+	'make dist' so that the distribution will have the old plugin 
 	included (Tim Wright)
 	
 2.1.2: 
        Xosd man page fix (Matthew Slowe)
-       undo xosd_create / xost_init mixup from 2.1.1 (Philipp Hahn)
+       undo xosd_create / xosd_init mixup from 2.1.1 (Philipp Hahn)
       
 	
 2.1.1: Philipp Matthias Hahn (the Debian Maintainer) sent in a huge patch:
@@ -109,7 +122,7 @@
 		Mandrake Package Maintainer is Götz Waschk.
 	Miscellaneous (and many) thanks to the Package Maintainers (Tim Wright)
 	Put the xmms plugin and libxosd libraries in subdirectories of src/.
-	  this was done to emable people to build libxosd without building the xmms
+	  this was done to enable people to build libxosd without building the xmms
 	  plugin. This might have broken the redhat packaging stuff.
 	  (Tim Wright, based on patch by Mathieu Seigneurin)
 	
