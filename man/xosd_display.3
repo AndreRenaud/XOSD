@@ -1,0 +1,130 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.TH xosd_display 3xosd "2002-06-25" "X OSD Library"
+.SH NAME
+xosd_display \- Display data using XOSD
+.SH SYNOPSIS
+.B #include <xosd.h>
+.sp
+.BI "int xosd_display (xosd* " osd ", int " line , xosd_command " command ", ... );
+.fi
+.SH DESCRIPTION
+.B xosd_display
+displays either a string, a percentage bar (like a progress bar) or a
+slider on an X display.
+The data is displayed in a borderless shaped window, so it appears to
+float on top of the other windows \- much like the on-screen displays
+found in many televisions.
+Users cannot interact with the display in any way.
+
+The type of data displayed is determined by the argument to
+.IR command .
+Text is displayed by passing
+.B XOSD_string
+as the argument to
+.IR command , 
+followed by a string in UTF-8 format.
+Integer values can be displayed in two ways: a percentage bar or a
+slider.
+Both methods can only display numbers between 0 and 100.
+A percentage bar looks like a volume display on a TV, and is
+created by passing 
+.B XOSD_percentage
+as the argument to
+.IR command .
+A slider (see the XOSD plugin for 
+.IR xmms (1)
+for an example)
+is created by passing 
+.B XOSD_slider
+as the argument to
+.IR command .
+An 
+.I int
+between 0 and 100 is expected as the final argument when either
+.B XOSD_percentage
+or
+.B XOSD_slider
+is passed as the argument to
+.IR command .
+
+The data is displayed until the timeout limit set during the call to
+.BI xosd_init (3xosd)
+is reached.
+The controlling process does not block during this time; instead a new
+thread is spawned to manage the window.
+If blocking is required
+.IR xosd_wait_until_no_display (3xosd)
+should be called after 
+.IR xosd_display .
+A
+.I xosd
+window that is showing data can be removed from the display by calling
+.IR xosd_hide (3xosd).
+.SH ARGUMENTS
+.IP \fIosd\fP 1i
+The on-screen display object to act on.
+.IP \fIline\fP 1i
+The line of the display to change.
+.IP \fIcommand\fP 1i
+One of
+.B XOSD_percentage
+,
+.B XOSD_slider
+or
+.B XOSD_string.
+If
+.B XOSD_percentage
+or 
+.B XOSD_slider
+is given then an
+.I int
+between 1 and 100 is expected as the value for the display.
+If the command is 
+.B XOSD_string
+then the next argument should be a string in UTF-8 format.
+.SH "RETURN VALUE"
+If the 
+.I command 
+is either 
+.B XOSD_percentage
+or
+.B XOSD_slider
+then the integer value of the bar or slider is given (between 1 and
+100).
+For
+.B XOSD_string
+the number of characters written to the display is returned.
+On error \-1 is returned for all 
+.I commands.
+.SH EXAMPLE
+The following example displays the text 
+.B Example XOSD output
+at the top of the display, using the 
+.I fixed
+font and the colour
+.I LawnGreen.
+After three seconds the window will be removed from the display.
+
+.nf
+#include <xosd.h>
+
+int main (int argc, char *argv[])
+{
+	xosd *osd;
+
+	osd = xosd_init ("fixed", "LawnGreen", 3, XOSD_top, 0, 1);
+
+	xosd_display (osd, 0, XOSD_string, "Example XOSD output");
+
+	xosd_wait_until_no_display(osd);
+
+	xosd_uninit (osd);
+
+	return EXIT_SUCCESS;
+}
+.fi
+.SH "SEE ALSO"
+.BR xosd_init (3xosd),
+.BR xosd_wait_until_no_display (3xosd),
+.BR xosd_hide (3xosd),
+.BR xmms (1)

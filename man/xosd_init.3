@@ -1,0 +1,92 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.TH xosd_init 3xosd "2002-06-25" "X OSD Library"
+.SH NAME
+xosd_init \- Create a new xosd window
+.SH SYNOPSIS
+.B #include <xosd.h>
+.sp
+.BI "xosd* xosd_init(char * " font ", char * " colour ", int " timeout , 
+.BI "xosd_pos " pos ", int " offset ", int " shadow_offset ", int " number_lines );
+.fi
+.SH DESCRIPTION
+.B xosd_init
+creates a new
+.I xosd
+window that can be used to display textual or numerical data on
+a X11 display in a unmanaged, shaped window that appears to be
+transparent. 
+It provides a similar effect to the on-screen display of many
+televisions and video recorders.
+
+The
+.I xosd
+window is placed at the top or bottom of the display, according to the
+value of
+.I pos.
+From this base point the display is moved
+.I offset 
+pixels, so desktop features such as GNOME or KDE panels can be
+avoided.
+Initially the window shows no data;
+when data is displayed (using
+.BI xosd_display (3xosd) )
+it appears in the font specified by
+.I font
+and in the colour specified by
+.I colour.
+To increase readibility (and 'cos it looks cool) a black shadow is
+drawn beneath the main text.
+The number of pixels that this shadow is offset from the main text is
+specified by the
+.I shadow_offset 
+argument.
+After
+.I timeout
+seconds the data is removed from the window.
+
+Execution of the program is not halted when displaying data, rather
+a separate thread is spawned to handle the removal of the window from
+the display after 
+.I timeout
+seconds.
+See
+.BI xosd_display (3xosd)
+for details.
+
+.SH ARGUMENTS
+.IP \fIfont\fP 1i
+The font name as a string that is in XLFD format.
+The easiest way to get a XLFD is to use a program such as 
+.BI xfontsel (1)
+or
+.BI gfontsel (1).
+.IP \fIcolour\fP 1i
+A colour name as string that is in a format which
+.BI XParseColor (3x)
+recognises.
+.IP \fItimeout\fP 1i
+Time, in seconds, that the text will be on screen before it gets removed.
+.IP \fIpos\fP 1i
+Were the display will be positioned.
+One of
+.B XOSD_top
+or
+.B XOSD_bottom
+(for the top or the bottom of the screen respectively).
+.IP \fIoffset\fP 1i
+Offset from the top or bottom of the screen, in pixels.
+.IP \fIshadow_offset\fP 1i
+Offset of black shadow from main text, in pixels.
+.IP \fInumber_lines\fP 1i
+The number of lines to display on the screen.
+.SH "RETURN VALUE"
+On success, a pointer to a
+.I xosd
+structure will be returned, otherwise
+.I NULL
+will be returned.
+.SH "SEE ALSO"
+.BR xosd_display (3xosd),
+.BR xfontsel (1),
+.BR gfontsel (1),
+.BR XParseColor (3x)

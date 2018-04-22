@@ -1,18 +1,52 @@
-0.7.0:  Added "XOSD_Slider" type to possible display types
-	Added balance display to xmms plugin
-	Fixed spelling mistake in osd_cat man page
-	Added "Apply" button to xmms plugin config dialog
-	Fixed a bug in set_font which caused it to crash if the font was 
-		non-existant
-	Added GPL to the top of xmms_osd.c
-	Moved some files around to be more GNU style compliant (Added empty
-		file NEWS)
-	Added Drop Shadows, as well as new function to set them (NOTE: This
-		changes the number of args xosd_init takes, so old programs 
-		will be incompatible. Sorry)
-	Updated man page to reflect API change
 
-0.6.1:  Fixed bug on non-Gnome compliant window managers
+1.0.0:
+	Applied proper xosd-multiline patch (Damien Elmes)
+	Modified xosd_init to take an extra param (the number of lines)
+	  (Tim Wright)
+	Finally got libtool and autoconf and automake all going
+	  (Tim Wright with lots of help from Martijn van de Streek and 
+	  Goetz Waschk --- it's easy once ya know how:)
+	Fixed the RedHat Packaging stuff (Oron Peled)
+	
+1.0.0pre3:
+	Applied man pages patch - all xosd functions now
+	 have their own man page (Michael JasonSmith)
+	Applied XOSD Multicolour patch (Bjorn Bringert)
+	Fixed internationalization calls based on patch by 
+	 Michael JasonSmith
+	Applied configure patches (Oron Peled)
+	Looked into AutoConf issues (Tim Wright)
+	Applied xosd-multiline patch (Damien Elmes and Tim Wright)
+	Applied misc speed and code niceness patch (Damien Elmes)
+	Upgraded the libtool version (I hope)
+	Changed version numbering to conform to RedHat numbering 
+	  (as suggested by Oron Peled)
+	
+1.0.0-pre2:
+	Applied xosd.h comment and compile-error patch 
+	         (Michael JasonSmith)
+	Applied xmms_osd automake linking patch (Goetz Waschk)
+	Needed Andre's help to get the automake linking patch
+	         working (Tim Wright and Andre Renaud)
+	Applied xmms_osd "don't show volume and balance" patch 
+	         (Adrian Brewt)
+	Fixed bugs introduced by that patch because Adrian's 
+	         patch was context free (Tim Wright)
+	 - remember "diff -rc3 orig-xosd-dir your-modified-xosd-dir"
+	         (or something like that anyway)
+	Fixed "can't enable/disable xosd lots" bug (Tim Wright)	
+	Completly fucked the automake system (again), but managed to 
+	         back out of those changes (Tim Wright)
+	
+1.0.0-pre1: New maintainer: Tim Wright (tnw13@cosc.canterbury.ac.nz)
+	Applied autoconf patch
+	Applied DTM's xmms_osd patch
+	Applied Locale patch (unknown author)
+	Applied segfault fix:unknown font (unknown author)
+	Applied showstreamname patch (unknown author)
+	Rejected mtv patch - shouldn't need to modify xosd.{h,c} to do this
+	Applied shadow and offset patch   (Malcolm Valentine <farkit@iprimus.com.au>)
+	Applied Concurrency Control patch (Tim Wright)
 
 0.6.0:  Fixed problem in Makefile which caused it to link against an older 
 		version of the library

@@ -1,0 +1,137 @@
+.\" Emacs, -*- nroff -*- please
+.TH XOSD 3xosd "December 2000" "X OSD Library"
+.SH NAME
+xosd - X on-screen display library
+.SH SYNOPSIS
+.nf
+.B #include <xosd.h>
+.sp
+.BI "xosd* xosd_init(char * " font ", char * " colour ", int " timeout , 
+.BI "		     xosd_pos " pos ", int " offset ", int " shadow_offset, 
+.BI "                int " number_lines ); 
+.sp
+.BI "int xosd_uninit (xosd* " osd );
+.sp
+.BI "int xosd_display (xosd* " osd ", int " line ,
+.BI "                  xosd_command " command ", " ... );
+.sp
+.BI "int xosd_is_onscreen(xosd* " osd );
+.sp
+.BI "int xosd_wait_until_no_display(xosd* " osd );
+.sp
+.BI "int xosd_hide (xosd* " osd );
+.sp
+.BI "int xosd_show (xosd* " osd );
+.sp
+.BI "int xosd_set_pos (xosd* " osd ", xosd_pos " pos );
+.sp
+.BI "int xosd_set_offset (xosd* " osd ", int " offset );
+.sp
+.BI "int xosd_set_shadow_offset (xosd* " osd ", int " shadow_offset );
+.sp
+.BI "int xosd_set_timeout (xosd* " osd ", int " timeout );
+.sp
+.BI "int xosd_set_font (xosd* " osd ", char* " font );
+.sp
+.BI "int xosd_set_colour (xosd* " osd ", char* " colour );
+.sp
+.BI "int xosd_get_colour (xosd* " osd ,
+.BI "                     int* " red ", int* " green ", int* " blue );
+.sp
+.BI "int xosd_scroll (xosd* "osd ", int " lines );
+.sp
+.BI "int xosd_get_number_lines ( xosd* "osd "); "
+.fi
+.SH ARGUMENTS
+.IP \fIfont\fP 1i
+String with a font name (in XLFD format)
+.IP \fIcolour\fP 1i
+A color name string (in a format which
+.BI XParseColor (3x)
+recognises)
+.IP \fItimeout\fP 1i
+Time the text will be on screen before it gets removed.
+.IP \fIpos\fP 1i
+One of
+.B XOSD_top
+or
+.B XOSD_bottom
+(for the top or the bottom of the screen)
+.IP \fIoffset\fP 1i
+Offset from the top or bottom of the screen.
+.IP \fIshadow_offset\fP 1i
+Offset of black shadow from main text.
+.IP \fIosd\fP 1i
+The on-screen display object to act on.
+.IP \fIlines\fP 1i
+The number of lines to scroll up.
+.IP \fIcommand\fp 1i
+One of 
+.B XOSD_percentage
+,
+.B XOSD_slider
+,
+.B XOSD_string
+or
+.B XOSD_printf
+. XOSD_percentage take a single int argument (from 0 - 100) and displays the
+appropriate number of bars, XOSD_slider is similar, except it only displays
+a line at the exact percentage required, rather than a full bar up to that
+point, XOSD_string takes a single char *, and XOSD_printf takes a print 
+style string, and its arguments.
+.SH RETURN VALUES
+All fuctions return 0 on success and -1 on failure, except xosd_display and  
+xosd_is_onscreen.
+.IP \fIxosd_display\fP 1i
+Returns the percentage (between 1 and 100) for 
+.B XOSD_percentage
+or
+.B XOSD_slider
+, or the number of characters displayed for
+.B XOSD_string. 
+-1 is returned on failure.
+.IP \fIxosd_is_onscreen\fP 1i
+Returns 1 if xosd is currently displaying data on-screen, 0 if it is not,
+and -1 on failure.
+.SH DESCRIPTION
+xosd is a library for displaying an on-screen display (like the one on
+many TVs) on your X display.
+.sp
+The latest version can be found on
+http://www.ignavus.net/software.html
+.PP
+It is distributed under the GNU General Public License.
+
+.SH BUGS
+No known bugs at the moment.
+.sp
+Bug reports can be sent to tnw13@cosc.canterbury.ac.nz
+
+.SH EXAMPLE
+.nf
+#include <xosd.h>
+
+int main (int argc, char *argv[])
+{
+	xosd *osd;
+
+	osd = xosd_init ("fixed", "LawnGreen", 3, XOSD_top, 0, 1, 1);
+
+	xosd_display (osd, 0, XOSD_string, "Example XOSD output");
+
+	xosd_wait_until_no_display(osd);
+
+	xosd_uninit (osd);
+
+	return EXIT_SUCCESS;
+}
+.fi
+
+.SH AUTHOR
+Martijn van de Streek <martijn@foodfight.org>, Some patching by Malcolm Valentine <farkit@iprimus.com.au> and Tim Wright <tim@ignavus.net>.
+.PP
+xosd was written by Andre Renaud <andre@ignavus.net> and is maintained by Tim Wright <tim@ignavus.net>.
+.SH SEE ALSO
+More information on the X OSD Library and its author can be found on
+http://www.ignavus.net/software.html. Each function has its own man-page.
+See there for more information.

@@ -1,0 +1,37 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.TH xosd_is_onscreen 3xosd "2002-06-25" "X OSD Library"
+.SH NAME
+xosd_is_onscreen \- Returns weather the XOSD window is show
+.SH SYNOPSIS
+.B #include <xosd.h>
+.sp
+.BI "int xosd_is_onscreen(xosd* " osd );
+.fi
+.SH DESCRIPTION
+.B xosd_is_onscreen
+determines weather a
+.I xosd
+window, is currently being displayed (is mapped to the X display).
+Because XOSD displays data asynchronously (see 
+.BI xosd_display (3xosd)
+for details) it can be difficult to know if data is currently being
+displayed, 
+.B xosd_is_onscreen
+solves this problem.
+
+Call 
+.BI xosd_show (3xosd)
+or
+.BI xosd_hide (3xosd)
+to alter the visibility of the XOSD window.
+.SH ARGUMENTS
+.IP \fIosd\fP 1i
+The on-screen display object to act on.
+.SH "RETURN VALUE"
+One is returned if the display is shown, zero otherwise.
+.SH "SEE ALSO"
+.BR xosd_init (3xosd),
+.BR xosd_display (3xosd),
+.BR xosd_show (3xosd),
+.BR xosd_hide (3xosd)
+

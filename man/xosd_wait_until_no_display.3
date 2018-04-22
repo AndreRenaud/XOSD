@@ -1,0 +1,25 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.TH xosd_wait_until_no_display 3xosd "2002-06-25" "X OSD Library"
+.SH NAME
+xosd_wait_until_no_display - Wait until XOSD is not displaying data
+.SH SYNOPSIS
+.B #include <xosd.h>
+.sp
+.BI "void xosd_wait_until_no_display(xosd* " osd );
+.fi
+.SH DESCRIPTION
+.BI xosd_display (3xosd)
+does not halt execution of main program while displaying data.
+However, 
+.B xosd_wait_until_no_display
+will suspend execution of the program until the XOSD window
+.I osd
+is no-longer showing any data.
+
+.SH ARGUMENTS
+.IP \fIosd\fP 1i
+The on-screen display object to act on.
+.SH "SEE ALSO"
+.BR xosd_init (3xosd),
+.BR xosd_display (3xosd)
+
