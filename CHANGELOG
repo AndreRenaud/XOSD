@@ -1,0 +1,25 @@
+0.3.0:  Added program osd_cat (useful (sortof) for xconsole type display)
+	Fixed segfault with empty playlist while XOSD is running
+	Another attempt at getting always on top to go (ARGH!)
+	Added font selection dialog to config dialog
+	Added colour selection dialog to config dialog
+	Updates window size when font changes
+	Updated percentage display to use proper bars, not '|' & '-'
+
+0.2.0:
+	Added option to change offset & position of xosd display
+	Fixed another crash on exit bug, no longer segfaults xmms now
+		(at least on my machine)
+	Fixed always on top to use the correct hint. Damn magic numbers
+
+0.1.0:
+	Added option to change timeout length (default: 3 secs)
+	Fixed it to  dynamically apply changes, colour, font, timeout etc..
+	Now always on top
+	Fixed crash on exit bug, although I think another still exists
+
+0.0.3: Added Config Dialog
+
+0.0.2: I can't remember what changes I made
+
+0.0.1: Initial Release

@@ -1,0 +1,19 @@
+Please send any commentry to: xosd@ignavus.net
+
+There are several modules here.
+
+xosd.c & xosd.h combine to form (VOLTRON!) libxosd.so, which is the main
+unit
+
+xmms_osd.c becomes libxmms_osd.so which is an xmms plugin to display various
+things whenever they change (volume, track, paused/shuffle/repeat etc...)
+
+testprog.c is a simple test program, not supposed to do anything useful,
+but handy if you're having problems getting it going.
+
+osd_cat.c is another simple program, it simply reads from stdin and displays
+it using osd. All its options are hardcoded, its not supposed to be used for
+anything too smart, I am hoping someone will code a replacement for me :)
+
+NB: The first thing to check is that you have a proper font #define'd, use
+xfontsel to find a suitable one

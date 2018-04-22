@@ -1,0 +1,100 @@
+Package name:     xosd
+Version number:   0.3.0
+Original author:  Spoonboy <spoonboy@ignavus.net>
+Original URL:     http://www.ignavus.net/software.html
+HP-UX URL:        http://hpux.connect.org.uk/hppd/cgi-bin/search?package=&term=xosd-
+Dependencies:     audiofile esound glib gtk+ xmms
+Install tree:     /opt/xosd
+Report bugs to:   stephie@connect.org.uk
+Tested on:        HP 9000/780/C160 running HP-UX 11.00
+C compiler used:  Version A.11.01.21505.GP
+Purpose:
+Library to display text on your root window. It is unmanaged and shaped, so it
+appears transparent. This gives the effect of an On Screen Display, like your
+TV. The package also includes an xmms plugin, which automatically displays
+various interesting things as they change, e.g. Song title, volume. The xmms
+plugin does not build on 10.20.
+Date archived:    Wed 29 Nov 2000
+
+-------------------------------------------------------------------------------
+
+System:
+======
+	HP-UX shin B.11.00 A 9000/780
+
+URL:
+====
+      Probably from Freshmeat. Yep:
+
+	http://freshmeat.net/appindex/X11/Utilities.html
+	
+
+HP Porting Changes:
+===================
+
+  Configuration Files:
+
+      Makefile -> I'v mucked it about to produce what seem to be
+                  sensible targets - two shared libs (one vanilla
+                  and one with xmms support),  and the demo(?),
+                  depending what kind of HP OS your on. 
+                  I never figured out what osd_cat.o is/was used for.
+
+Building:
+=========
+
+  First unpack the software:
+
+  	% gunzip -c pkg-version.tar.gz | tar -xvf -
+
+
+  Run "make" in the top level dir.
+
+  Use "make -n install" to check the defaults, then "make install"
+
+  You can build it on hpux 10.20 *without* the XMMS bits *IF* you
+  have GNU pthreads.  Use my Makefile if you *LIKE* - Its a hack :)
+
+
+Running:
+========
+
+	Try the modified "testprog",  (It puts up an HPUX Banner).
+	I cant say i'v tested the xmms plugin code with XMMS itself,
+        (how to??) and I still needed to link in libxosd.a to make 
+        a binary test prog (see Makefile). 
+       
+Comments:
+=========
+
+        Exciting idea, but more hints from the Author urgently required.
+        The testprog is working fine.
+
+        Binary Package users: Compile $(prefix)/bin/testprog.c as usual 
+        to get the demo (below).
+
+##Makefile snippet ...
+%.o: %.c
+        $(CC) -c -o $@ $<  $(CFLAGS)
+
+SOLFLAGS=-L/usr/X11R6/lib -lXext -lpthread -lXt -lX11
+testprog: testprog.o
+	$(CC) -o $@ testprog.o $(SOLFLAGS) -lrt libxosd.a
+
+##
+
+
+Installed:
+==========
+ By
+ --     [stephie@connect.org.uk]
+ On
+ --	[ 29/11/00 ]
+ 
+
+
+       ©HPUX Porting and Archive Centre, Connect, Liverpool University.
+
+    __/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/
+  __/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/__/
+
