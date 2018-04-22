@@ -65,8 +65,7 @@ struct xosd
    Pixmap bitmap;
    Visual *visual;
    
-   Font font;
-   XFontStruct *font_info;
+   XFontSet fontset;
    
    GC gc;
    GC bitmap_gc;
@@ -96,14 +95,15 @@ static void draw_percentage (xosd *osd, Drawable d, GC gc, int x, int y,
    {
    int nbars, on, i;
    int barw, barh;
+   XFontSetExtents *extents = XExtentsOfFontSet(osd->fontset);
 
-   barh = osd->font_info->max_bounds.ascent;
+   y -= - (extents->max_logical_extent.y);
+
+   barh = - (extents->max_logical_extent.y);
    barw = barh / 2;
 
    nbars = (osd->width * 0.8) / barw;
    on = nbars * percent / 100;
-
-   y -= osd->font_info->max_bounds.ascent;
 
    for (i = 0; i < nbars; x += barw, i++)
       {
@@ -120,17 +120,18 @@ static void expose (xosd *osd)
    {
    int line;
    int x, y;
+   XFontSetExtents *extents;
    
    MUTEX_GET ();
 
    XFillRectangle (osd->display, osd->bitmap, osd->bitmap_gc_back,
 		   0, 0, osd->width, osd->height);
+   extents = XExtentsOfFontSet(osd->fontset);
    
    for (line = 0; line < NLINES; line ++)
       {
       x = 10;
-      y = (osd->font_info->max_bounds.ascent +
-	   osd->font_info->max_bounds.descent) * (line + 1);
+      y = extents->max_logical_extent.height * (line + 1);
 
       switch (osd->lines[line].type)
 	 {
@@ -138,17 +139,21 @@ static void expose (xosd *osd)
 	 case LINE_text:
 	    {
 	    char *text;
+	    int len;
 	    
 	    text = osd->lines[line].text;
 	    if (!text)
 	       break;	    
 	    /* printf ("line: [%d] (%d, %d) %s\n", line, x, y, osd->lines[line]); */
 
-	    XDrawString (osd->display, osd->bitmap, osd->bitmap_gc, x, y,
-			 text, strlen (text));
+	    len = strlen (text);
+	    XmbDrawString (osd->display, osd->bitmap, osd->fontset,
+			   osd->bitmap_gc, x, y,
+			   text, len);
 
-	    XDrawString (osd->display, osd->window, osd->gc, x, y,
-			 text, strlen (text));
+	    XmbDrawString (osd->display, osd->window, osd->fontset,
+			   osd->gc, x, y,
+			   text, len);
 	    break;
 	    }
 	 
@@ -284,19 +289,28 @@ static int force_redraw (xosd *osd)
 
 static int set_font (xosd *osd, char *font)
    {
+   char **missing;
+   int nmissing;
+   char *defstr;
+   XFontSetExtents *extents;
+
    assert (osd);
 
    MUTEX_GET ();
 
-   osd->font = XLoadFont (osd->display, font);
-   osd->font_info = XQueryFont (osd->display, osd->font);
-   XSetFont (osd->display, osd->bitmap_gc, osd->font);
-   XSetFont (osd->display, osd->gc, osd->font);   
+   osd->fontset = XCreateFontSet (osd->display, font,
+                                  &missing, &nmissing, &defstr);
+   if (osd->fontset == NULL)
+      {
+      fprintf (stderr, "Requested font: `%s' not found\n", font);
+      return -1;
+      }
+
+   extents = XExtentsOfFontSet(osd->fontset);
    
    osd->width = XDisplayWidth (osd->display, SCREEN);
-   osd->height = (osd->font_info->max_bounds.ascent +
-		  osd->font_info->max_bounds.descent) * NLINES + 10;
-   
+   osd->height = extents->max_logical_extent.height * NLINES + 10;
+
    XResizeWindow (osd->display, osd->window, osd->width, osd->height);
    
    MUTEX_RELEASE ();
@@ -353,8 +367,13 @@ xosd *xosd_init (char *font, char *colour, int timeout, xosd_pos pos, int offset
    char *display;
    XSetWindowAttributes setwinattr;
    long data;
+   char **missing;
+   int nmissing;
+   char *defstr;
+   XFontSetExtents *extents;
 
    
+   /* fprintf(stderr, "Hello!\n"); */
    display = getenv ("DISPLAY");
    if (!display)
       {
@@ -377,6 +396,7 @@ xosd *xosd_init (char *font, char *colour, int timeout, xosd_pos pos, int offset
    
    if (!XShapeQueryExtension (osd->display, &event_basep, &error_basep))
       {
+      fprintf (stderr, "X-Server does not support shape extension\n");
       free(osd);
       return NULL;
       }
@@ -384,12 +404,12 @@ xosd *xosd_init (char *font, char *colour, int timeout, xosd_pos pos, int offset
    osd->visual = DefaultVisual (osd->display, SCREEN);
    osd->depth = DefaultDepth (osd->display, SCREEN);
 
-   osd->font = XLoadFont (osd->display, font);
-   osd->font_info = XQueryFont (osd->display, osd->font);
-
-   osd->width = XDisplayWidth (osd->display, SCREEN);
-   osd->height = (osd->font_info->max_bounds.ascent +
-		  osd->font_info->max_bounds.descent) * NLINES + 10;
+   osd->fontset = XCreateFontSet (osd->display, font,
+                                  &missing, &nmissing, &defstr);
+   extents = XExtentsOfFontSet(osd->fontset);
+   
+   osd->width = XDisplayWidth (osd->display, osd->screen);
+   osd->height = extents->max_logical_extent.height * NLINES + 10;
    
    setwinattr.override_redirect = 1;
    osd->window = XCreateWindow (osd->display,

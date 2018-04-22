@@ -140,7 +140,7 @@ static void configure_ok_cb (gpointer data)
       xosd_set_offset (osd, offset);
       xosd_set_pos (osd, pos);
       }
-   
+
    cfgfile = xmms_cfg_open_default_file();
    xmms_cfg_write_string(cfgfile, "osd", "colour", colour);
    xmms_cfg_write_string(cfgfile, "osd", "font", font);
@@ -262,16 +262,18 @@ static int colour_dialog_window (GtkButton *button, gpointer user_data)
    assert (colour_dialog);
    
    colour_widget = GTK_COLOR_SELECTION_DIALOG (colour_dialog)->colorsel;
-
-   xosd_get_colour (osd, &red, &green, &blue);
+   if (osd)
+      {
+      xosd_get_colour (osd, &red, &green, &blue);
    
-   colour[0] = (float)red / (float)USHRT_MAX;
-   colour[1] = (float)green / (float)USHRT_MAX;
-   colour[2] = (float)blue / (float)USHRT_MAX;
+      colour[0] = (float)red / (float)USHRT_MAX;
+      colour[1] = (float)green / (float)USHRT_MAX;
+      colour[2] = (float)blue / (float)USHRT_MAX;
    
-   gtk_color_selection_set_color (GTK_COLOR_SELECTION 
-				  (GTK_COLOR_SELECTION_DIALOG 
-				   (colour_dialog)->colorsel), colour);
+      gtk_color_selection_set_color (GTK_COLOR_SELECTION 
+				     (GTK_COLOR_SELECTION_DIALOG 
+				      (colour_dialog)->colorsel), colour);
+      }
    
    ok_button = GTK_COLOR_SELECTION_DIALOG (colour_dialog)->ok_button;
    cancel_button = GTK_COLOR_SELECTION_DIALOG (colour_dialog)->cancel_button;
@@ -289,7 +291,8 @@ static int colour_dialog_window (GtkButton *button, gpointer user_data)
 
 static void configure (void)
    {
-   GtkWidget *vbox, *bbox, *ok, *cancel, *hbox, *label, *button;
+   GtkWidget *vbox, *bbox, *ok, *cancel, *apply, *hbox, *label, 
+      *button, *unit_label;
    GSList *group = NULL;
    
    if (configure_win)
@@ -307,7 +310,8 @@ static void configure (void)
    
    vbox = gtk_vbox_new (TRUE, 10);
    gtk_container_add (GTK_CONTAINER (configure_win), vbox);
-
+   gtk_container_set_border_width (GTK_CONTAINER (configure_win), 5);
+   
    hbox = gtk_hbox_new (FALSE, 5);
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    label = gtk_label_new ("Font:");
@@ -315,7 +319,7 @@ static void configure (void)
    font_entry = gtk_entry_new ();
    if (font)
       gtk_entry_set_text (GTK_ENTRY (font_entry), font);
-   gtk_box_pack_start (GTK_BOX (hbox), font_entry, FALSE, FALSE, 0);
+   gtk_box_pack_start (GTK_BOX (hbox), font_entry, TRUE, TRUE, 0);
    button = gtk_button_new_with_label ("Set");
    gtk_signal_connect (GTK_OBJECT (button), "clicked",
 		       GTK_SIGNAL_FUNC (font_dialog_window), NULL);
@@ -329,7 +333,7 @@ static void configure (void)
    colour_entry = gtk_entry_new ();
    if (colour)
       gtk_entry_set_text (GTK_ENTRY (colour_entry), colour);
-   gtk_box_pack_start (GTK_BOX (hbox), colour_entry, FALSE, FALSE, 0);
+   gtk_box_pack_start (GTK_BOX (hbox), colour_entry, TRUE, TRUE, 0);
    button = gtk_button_new_with_label ("Set");
    gtk_signal_connect (GTK_OBJECT (button), "clicked",
 		       GTK_SIGNAL_FUNC (colour_dialog_window), NULL);
@@ -340,24 +344,27 @@ static void configure (void)
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    label = gtk_label_new ("Timeout:");
    gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-   timeout_obj = gtk_adjustment_new (timeout, 1, 60, 1, 1, 1);
+   timeout_obj = gtk_adjustment_new (timeout, -1, 60, 1, 1, 1);
    timeout_spin = gtk_spin_button_new (GTK_ADJUSTMENT (timeout_obj), 1.0, 0);
    if (timeout)
       gtk_spin_button_set_value (GTK_SPIN_BUTTON (timeout_spin), 
 				 (gfloat) timeout);
    gtk_box_pack_start (GTK_BOX (hbox), timeout_spin, FALSE, FALSE, 0);
+   unit_label = gtk_label_new ("seconds");
+   gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);
 
+   
    hbox = gtk_hbox_new (FALSE, 5);
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    label = gtk_label_new ("Vertical Offset:");
    gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-   offset_obj = gtk_adjustment_new (timeout, 1, 60, 1, 1, 1);
+   offset_obj = gtk_adjustment_new (timeout, 0, 60, 1, 1, 1);
    offset_spin = gtk_spin_button_new (GTK_ADJUSTMENT (offset_obj), 1.0, 0);
    if (offset)
       gtk_spin_button_set_value (GTK_SPIN_BUTTON (offset_spin),
 				 (gfloat) offset);
    gtk_box_pack_start (GTK_BOX (hbox), offset_spin, FALSE, FALSE, 0);   
-
+   
    hbox = gtk_hbox_new (FALSE, 5);
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    label = gtk_label_new ("Position:");

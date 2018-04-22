@@ -1,3 +1,7 @@
+0.4.0:  Added unicode character support (thanks for the patch)
+	Added error messages if shape extension is unavailable
+	Update Configuration Dialog, now looks much nicer
+
 0.3.0:  Added program osd_cat (useful (sortof) for xconsole type display)
 	Fixed segfault with empty playlist while XOSD is running
 	Another attempt at getting always on top to go (ARGH!)
