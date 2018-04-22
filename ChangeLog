@@ -1,4 +1,9 @@
 
+2.2.10: 
+	Applied two patches from debian maintainer. The first fixes an
+	alignment problem in libxosd and the second fixes a locale problem
+	in osd_cat.
+	
 2.2.9: 
         Applied 36 patches from the Debian maintainer. I thought that he
 	was being quiet, but it turns out that my email had magically

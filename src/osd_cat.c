@@ -14,6 +14,8 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <errno.h>
+#include <locale.h>
+#include <X11/Xlib.h>
 #include <sys/time.h>
 
 static struct option long_options[] = {
@@ -66,6 +68,9 @@ xosd_align align = XOSD_left;
 int
 main(int argc, char *argv[])
 {
+  if (setlocale(LC_ALL, "") == NULL || !XSupportsLocale())
+    fprintf(stderr, "Locale not available, expect problems with fonts.\n");
+
   while (1) {
     int option_index = 0;
     int c =

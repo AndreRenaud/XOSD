@@ -914,8 +914,8 @@ union xosd_line newline = { type:LINE_blank };
       } else {
         ret = 0;
         l->type = LINE_blank;
-        l->width = -1;
       }
+      l->width = -1;
       break;
     }
 
