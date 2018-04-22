@@ -1,5 +1,5 @@
 
-SUBDIRS = macros man src script
+SUBDIRS = macros man pixmaps src script
 
 DISTCLEANFILES = libtool-disable-static
 

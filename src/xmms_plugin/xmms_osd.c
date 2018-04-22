@@ -19,6 +19,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <gtk/gtk.h>
 
+#include <gdk-pixbuf/gdk-pixbuf.h>
+
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -40,13 +42,14 @@ static void read_config (void);
 static void configure (void);
 static void show_item(GtkWidget* vbox, const char* description, int selected, GtkToggleButton** on);
 static void save_previous_title ( gchar * title );
+GtkWidget **position_icons_new(void);
 
 GeneralPlugin gp =
   {
     .handle = NULL,
     .filename = NULL,
     .xmms_session = -1,
-    .description = "On Screen Display",
+    .description = "On Screen Display " XOSD_VERSION,
     .init = init,
     .about = NULL,
     .configure = configure,
@@ -63,6 +66,7 @@ static gchar *colour;
 
 static gint timeout;
 static gint offset;
+static gint h_offset;
 static gint shadow_offset;
 static gint pos;
 static gint align;
@@ -75,10 +79,10 @@ static gboolean show_stop;
 static gboolean show_repeat;
 static gboolean show_shuffle;
 
-static GtkObject *timeout_obj, *offset_obj, *shadow_obj;
+static GtkObject *timeout_obj, *offset_obj, *h_offset_obj, *shadow_obj;
 static GtkWidget *configure_win, *font_entry, *colour_entry,
-  *timeout_spin, *offset_spin, *pos_top, *pos_bottom, *pos_middle,
-  *align_left, *align_right, *align_center, *shadow_spin;
+  *timeout_spin,*offset_spin, *h_offset_spin,  *shadow_spin;
+static GtkWidget *positions[3][3];
 
 static GtkToggleButton
   *vol_on, *bal_on,
@@ -130,8 +134,8 @@ static void init(void)
   xosd_set_pos(osd, pos);
   xosd_set_align(osd, align);
   xosd_set_vertical_offset(osd, offset);
+  xosd_set_horizontal_offset(osd, h_offset);
   xosd_set_shadow_offset(osd, shadow_offset);
-
  DEBUG("osd initialized");
   if (osd)
     timeout_tag = gtk_timeout_add (100, timeout_func, NULL);
@@ -192,6 +196,7 @@ static void read_config (void)
   font = NULL;
   timeout = 3;
   offset = 50;
+  h_offset = 0;
   shadow_offset = 1;
   pos = XOSD_bottom;
   align = XOSD_left;
@@ -205,9 +210,10 @@ static void read_config (void)
       xmms_cfg_read_string (cfgfile, "osd", "colour", &colour);
       xmms_cfg_read_int (cfgfile, "osd", "timeout", &timeout);
       xmms_cfg_read_int (cfgfile, "osd", "offset", &offset);
+      xmms_cfg_read_int (cfgfile, "osd", "h_offset", &h_offset);
+      xmms_cfg_read_int (cfgfile, "osd", "shadow_offset", &shadow_offset);
       xmms_cfg_read_int (cfgfile, "osd", "pos", &pos);
       xmms_cfg_read_int (cfgfile, "osd", "align", &align);
-      xmms_cfg_read_int (cfgfile, "osd", "shadow_offset", &shadow_offset);
       xmms_cfg_read_int (cfgfile, "osd", "show_volume", &show_volume );
       xmms_cfg_read_int (cfgfile, "osd", "show_balance", &show_balance );
       xmms_cfg_read_int (cfgfile, "osd", "show_pause", &show_pause );
@@ -265,21 +271,54 @@ static void configure_apply_cb (gpointer data)
   font = g_strdup (gtk_entry_get_text (GTK_ENTRY (font_entry)));
   timeout = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (timeout_spin));
   offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (offset_spin));
+  h_offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (h_offset_spin));
   shadow_offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (shadow_spin));
 
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (pos_top)))
-    pos = XOSD_top;
-  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (pos_middle)))
-    pos = XOSD_middle;
-  else
-    pos = XOSD_bottom;
-
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (align_left)))
-    align = XOSD_left;
-  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (align_center)))
-    align = XOSD_center;
-  else
-    align = XOSD_right;
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_top][XOSD_left])))
+    {
+      pos = XOSD_top;
+      align = XOSD_left;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_top][XOSD_center])))
+    {
+      pos = XOSD_top;
+      align = XOSD_center;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_top][XOSD_right])))
+    {
+      pos = XOSD_top;
+      align = XOSD_right;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_middle][XOSD_left])))
+    {
+      pos = XOSD_middle;
+      align = XOSD_left;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_middle][XOSD_center])))
+    {
+      pos = XOSD_middle;
+      align = XOSD_center;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_middle][XOSD_right])))
+    {
+      pos = XOSD_middle;
+      align = XOSD_right;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_bottom][XOSD_left])))
+    {
+      pos = XOSD_bottom;
+      align = XOSD_left;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_bottom][XOSD_center])))
+    {
+      pos = XOSD_bottom;
+      align = XOSD_center;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (positions[XOSD_bottom][XOSD_right])))
+    {
+      pos = XOSD_bottom;
+      align = XOSD_right;
+    }
 
   if (osd)
     {
@@ -290,6 +329,7 @@ static void configure_apply_cb (gpointer data)
       }
       xosd_set_timeout (osd, timeout);
       xosd_set_vertical_offset (osd, offset);
+      xosd_set_horizontal_offset (osd, h_offset);
       xosd_set_shadow_offset (osd, shadow_offset);
       xosd_set_pos (osd, pos);
       xosd_set_align(osd, align);
@@ -300,6 +340,7 @@ static void configure_apply_cb (gpointer data)
   xmms_cfg_write_string(cfgfile, "osd", "font", font);
   xmms_cfg_write_int(cfgfile, "osd", "timeout", timeout);
   xmms_cfg_write_int(cfgfile, "osd", "offset", offset);
+  xmms_cfg_write_int(cfgfile, "osd", "h_offset", h_offset);
   xmms_cfg_write_int(cfgfile, "osd", "shadow_offset", shadow_offset);
   xmms_cfg_write_int(cfgfile, "osd", "pos", pos);
   xmms_cfg_write_int(cfgfile, "osd", "align", align);
@@ -491,11 +532,12 @@ static void configure (void)
 {
   GtkWidget *vbox, *bbox, *ok, *cancel, *apply, *hbox, *label,
     *button, *unit_label, *hbox2, *vbox2, *sep;
+  GtkWidget *table, **position_icons, *position_table;
   
-  GtkWidget *table;
+  xosd_pos curr_pos;
+  xosd_align curr_align;
 
   GSList *group = NULL;
-  GSList *group2 = NULL;
 
   DEBUG("configure");
   if (configure_win)
@@ -516,7 +558,7 @@ static void configure (void)
   gtk_container_set_border_width (GTK_CONTAINER (configure_win), 12);
 
   /* --=mjs=-- The Main table to pack everything into */
-  table = gtk_table_new (6, 3, FALSE);
+  table = gtk_table_new (7, 3, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(table), 12);
   gtk_table_set_col_spacings(GTK_TABLE(table), 12);
   gtk_box_pack_start (GTK_BOX (vbox), table, FALSE, FALSE, 0);
@@ -576,34 +618,14 @@ static void configure (void)
   gtk_label_set_justify(GTK_LABEL (unit_label), GTK_JUSTIFY_LEFT);
   gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);
 
-  /* Vertical Offset */
-  label = gtk_label_new ("Vertical Offset:");
+  /* Shadow Offset */
+  label = gtk_label_new ("Shadow Offset:");
   gtk_misc_set_alignment(GTK_MISC (label), 0.0, 0.0);
   gtk_label_set_justify(GTK_LABEL (label), GTK_JUSTIFY_LEFT);
   gtk_table_attach (GTK_TABLE (table), label, 0, 1, 3, 4,
 		    GTK_FILL, GTK_FILL, 0, 0);
   hbox = gtk_hbox_new (FALSE, 6);
   gtk_table_attach (GTK_TABLE (table), hbox, 1, 2, 3, 4,
-		    GTK_FILL, GTK_FILL, 0, 0);
-  offset_obj = gtk_adjustment_new (timeout, 0, 60, 1, 1, 1);
-  offset_spin = gtk_spin_button_new (GTK_ADJUSTMENT (offset_obj), 1.0, 0);
-  if (offset)
-    gtk_spin_button_set_value (GTK_SPIN_BUTTON (offset_spin),
-			       (gfloat) offset);
-  gtk_box_pack_start (GTK_BOX (hbox), offset_spin, FALSE, FALSE, 0);
-  unit_label = gtk_label_new ("pixels");
-  gtk_misc_set_alignment(GTK_MISC (unit_label), 0.0, 0.0);
-  gtk_label_set_justify(GTK_LABEL (unit_label), GTK_JUSTIFY_LEFT);
-  gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);
-
-  /* Shadow Offset */
-  label = gtk_label_new ("Shadow Offset:");
-  gtk_misc_set_alignment(GTK_MISC (label), 0.0, 0.0);
-  gtk_label_set_justify(GTK_LABEL (label), GTK_JUSTIFY_LEFT);
-  gtk_table_attach (GTK_TABLE (table), label, 0, 1, 4, 5,
-		    GTK_FILL, GTK_FILL, 0, 0);
-  hbox = gtk_hbox_new (FALSE, 6);
-  gtk_table_attach (GTK_TABLE (table), hbox, 1, 2, 4, 5,
 		    GTK_FILL, GTK_FILL, 0, 0);
   shadow_obj = gtk_adjustment_new (timeout, 0, 60, 1, 1, 1);
   shadow_spin = gtk_spin_button_new (GTK_ADJUSTMENT (shadow_obj), 1.0, 0);
@@ -619,67 +641,127 @@ static void configure (void)
   label = gtk_label_new ("Position:");
   gtk_misc_set_alignment(GTK_MISC (label), 0.0, 0.0);
   gtk_label_set_justify(GTK_LABEL (label), GTK_JUSTIFY_LEFT);
-  gtk_table_attach (GTK_TABLE (table), label, 0, 1, 5, 6,
+  gtk_table_attach (GTK_TABLE (table), label, 0, 1, 4, 5,
 		    GTK_FILL, GTK_FILL, 0, 0);
-  vbox2 = gtk_vbox_new (FALSE, 6);
-  gtk_table_attach (GTK_TABLE (table), vbox2, 1, 2, 5, 6,
+
+  position_icons = position_icons_new();
+  position_table = gtk_table_new(3, 3, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(position_table), 6);
+  gtk_table_set_col_spacings(GTK_TABLE(position_table), 6);
+  gtk_table_attach (GTK_TABLE (table), position_table, 1, 2, 4, 5,
 		    GTK_FILL, GTK_FILL, 0, 0);
-  pos_top = gtk_radio_button_new_with_label (NULL, "Top");
-  group = gtk_radio_button_group (GTK_RADIO_BUTTON (pos_top));
-  pos_middle = gtk_radio_button_new_with_label (group, "Middle");
-  pos_bottom = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (pos_top), "Bottom");
-  gtk_box_pack_start (GTK_BOX (vbox2), pos_top, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox2), pos_middle, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox2), pos_bottom, FALSE, FALSE, 0);
 
-  if (pos == XOSD_top)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pos_top), TRUE);
-  else  if (pos == XOSD_middle)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pos_middle), TRUE);
-  else 
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pos_bottom), TRUE);
+  curr_pos = XOSD_top;
+  for (curr_align = XOSD_left ; curr_align <= XOSD_right; curr_align++)
+    {
+      positions[curr_pos][curr_align] = gtk_radio_button_new(group);
+      gtk_container_add( GTK_CONTAINER (positions[curr_pos][curr_align]),
+			 position_icons[(curr_pos*3) + curr_align]);
+      assert(positions[curr_pos][curr_align] != NULL);
 
-  hbox = gtk_hbox_new (FALSE, 5);
-  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-  label = gtk_label_new ("Alginment:");
-  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-  align_left = gtk_radio_button_new_with_label (NULL, "Left");
-  group2 = gtk_radio_button_group (GTK_RADIO_BUTTON (align_left));
-  align_center = gtk_radio_button_new_with_label (group2, "Center");
-  align_right = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (align_left), "Right");
-  gtk_box_pack_start (GTK_BOX (hbox), align_left, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (hbox), align_center, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (hbox), align_right, FALSE, FALSE, 0);
+      gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (positions[curr_pos][curr_align]), FALSE);
+      group = gtk_radio_button_group (GTK_RADIO_BUTTON (positions[curr_pos][curr_align]));
 
-  if (align == XOSD_left)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (align_left), TRUE);
-  else if(align == XOSD_center)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (align_center), TRUE);
-  else
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (align_right), TRUE);
- 
+      if (pos == curr_pos && align == curr_align)
+	{
+	  gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON (positions[curr_pos][curr_align]), TRUE);
+	}
 
-  /*
-  hbox = gtk_hbox_new (FALSE, 5);
+      gtk_table_attach ( GTK_TABLE (position_table),
+			 positions[curr_pos][curr_align],
+			 curr_align, curr_align + 1,
+			 curr_pos, curr_pos + 1,
+			 GTK_FILL, GTK_FILL, 0, 0);
+    }
 
-  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-  label = gtk_label_new ("Volume :");
-  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-  vol_on = gtk_radio_button_new_with_label (NULL, "Yes");
-  group = gtk_radio_button_group (GTK_RADIO_BUTTON (vol_on));
-  vol_off = gtk_radio_button_new_with_label (group, "No");
-  gtk_box_pack_start (GTK_BOX (hbox), vol_on, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (hbox), vol_off, FALSE, FALSE, 0);
+  curr_pos = XOSD_middle;
+  for (curr_align = XOSD_left ; curr_align <= XOSD_right; curr_align++)
+    {
+      positions[curr_pos][curr_align] = gtk_radio_button_new (group);
+      gtk_container_add( GTK_CONTAINER (positions[curr_pos][curr_align]),
+			 position_icons[(curr_pos*3) + curr_align]);
+      assert(positions[curr_pos][curr_align] != NULL);
 
-  if (show_volume == 1)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (vol_on), TRUE);
-  else
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (vol_off), TRUE);
-  */
+      gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (positions[curr_pos][curr_align]), FALSE);
+      group = gtk_radio_button_group (GTK_RADIO_BUTTON (positions[curr_pos][curr_align]));
+
+      if (pos == curr_pos && align == curr_align)
+	{
+	  gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON (positions[curr_pos][curr_align]), TRUE);
+	}
+
+
+      gtk_table_attach ( GTK_TABLE (position_table),
+			 positions[curr_pos][curr_align],
+			 curr_align, curr_align + 1,
+			 1, 2,
+			 GTK_FILL, GTK_FILL, 0, 0);
+    }
+
+  curr_pos = XOSD_bottom;
+  for (curr_align = XOSD_left ; curr_align <= XOSD_right; curr_align++)
+    {
+      positions[curr_pos][curr_align] = gtk_radio_button_new (group);
+      gtk_container_add( GTK_CONTAINER (positions[curr_pos][curr_align]),
+			 position_icons[(curr_pos*3) + curr_align]);
+
+      assert(positions[curr_pos][curr_align] != NULL);
+
+      gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (positions[curr_pos][curr_align]), FALSE);
+      group = gtk_radio_button_group (GTK_RADIO_BUTTON (positions[curr_pos][curr_align]));
+
+      if (pos == curr_pos && align == curr_align)
+	{
+	  gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON (positions[curr_pos][curr_align]), TRUE);
+	}
+
+      gtk_table_attach ( GTK_TABLE (position_table),
+			 positions[curr_pos][curr_align],
+			 curr_align, curr_align + 1,
+			 2, 3,
+			 GTK_FILL, GTK_FILL, 0, 0);
+    }
+
+  /* Vertical Offset */
+  label = gtk_label_new ("Vertical Offset:");
+  gtk_misc_set_alignment(GTK_MISC (label), 0.0, 0.0);
+  gtk_label_set_justify(GTK_LABEL (label), GTK_JUSTIFY_LEFT);
+  gtk_table_attach (GTK_TABLE (table), label, 0, 1, 6, 7,
+		    GTK_FILL, GTK_FILL, 0, 0);
+  hbox = gtk_hbox_new (FALSE, 6);
+  gtk_table_attach (GTK_TABLE (table), hbox, 1, 2, 6, 7,
+		    GTK_FILL, GTK_FILL, 0, 0);
+  offset_obj = gtk_adjustment_new (timeout, 0, 60, 1, 1, 1);
+  offset_spin = gtk_spin_button_new (GTK_ADJUSTMENT (offset_obj), 1.0, 0);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON (offset_spin), offset);
+  gtk_box_pack_start (GTK_BOX (hbox), offset_spin, FALSE, FALSE, 0);
+  unit_label = gtk_label_new ("pixels");
+  gtk_misc_set_alignment(GTK_MISC (unit_label), 0.0, 0.0);
+  gtk_label_set_justify(GTK_LABEL (unit_label), GTK_JUSTIFY_LEFT);
+  gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);
+
+  // Horizontal Offset
+  label = gtk_label_new ("Horizontal Offset:");
+  gtk_misc_set_alignment(GTK_MISC (label), 0.0, 0.0);
+  gtk_label_set_justify(GTK_LABEL (label), GTK_JUSTIFY_LEFT);
+  gtk_table_attach (GTK_TABLE (table), label, 0, 1, 7, 8,
+		    GTK_FILL, GTK_FILL, 0, 0);
+  hbox = gtk_hbox_new (FALSE, 6);
+  gtk_table_attach (GTK_TABLE (table), hbox, 1, 2, 7, 8,
+		    GTK_FILL, GTK_FILL, 0, 0);
+  h_offset_obj = gtk_adjustment_new (timeout, 0, 60, 1, 1, 1);
+  h_offset_spin = gtk_spin_button_new (GTK_ADJUSTMENT (h_offset_obj), 1.0, 0);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON (h_offset_spin), h_offset);
+  gtk_box_pack_start (GTK_BOX (hbox), h_offset_spin, FALSE, FALSE, 0);
+  unit_label = gtk_label_new ("pixels");
+  gtk_misc_set_alignment(GTK_MISC (unit_label), 0.0, 0.0);
+  gtk_label_set_justify(GTK_LABEL (unit_label), GTK_JUSTIFY_LEFT);
+  gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);
 
   sep=gtk_hseparator_new();
   gtk_box_pack_start (GTK_BOX (vbox), sep, FALSE, FALSE, 0);
-
+  
+  // What data should be shown
   hbox2 = gtk_hbox_new (FALSE, 2);
   gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 0);
   label=gtk_label_new("Show:");
@@ -704,6 +786,7 @@ static void configure (void)
   sep=gtk_hseparator_new();
   gtk_box_pack_start (GTK_BOX (vbox), sep, FALSE, FALSE, 0);
 
+  // Command Buttons
   bbox = gtk_hbutton_box_new ();
   gtk_button_box_set_layout (GTK_BUTTON_BOX (bbox), GTK_BUTTONBOX_END);
   gtk_button_box_set_spacing (GTK_BUTTON_BOX (bbox), 5);
@@ -953,4 +1036,87 @@ void show_item(GtkWidget* vbox, const char* description, int selected, GtkToggle
   gtk_toggle_button_set_active (*on, selected);
 
 
+}
+
+
+/* "position_icons_new" -- Load the display position icons
+ * 
+ * DESCRIPTION
+ *    There are nine icons used to set the position of the XOSD
+ *    window: one for each compass point and one for the center.
+ *    "position_icons_new" loads these icons and returns them as an
+ *    array.  The directory that holds the PNG image files used for
+ *    the icons is defined by the CPP definition PIXMAPDIR
+ *
+ * ARGUMENTS
+ *    None.
+ *
+ * RETURNS
+ *    An array of nine (9, 00001011, IX) GtkPixmap widgets.
+ *
+ * DEPENDS
+ *    Libraries: gtk, gdk-pixbuf, stdlib, stdio
+ *    CPP Definitions: PIXMAPDIR
+ */
+GtkWidget **position_icons_new(void)
+{
+  GtkWidget **icons = NULL;
+  int i = 0;
+  int j = 0;
+  // Curse TNW13 and his "TOP, BOTTOM, MIDDLE" enumerations :)
+  const char *icon_names[3][3] = {{"top-left.png", "top.png", "top-right.png"},
+				  {"bottom-left.png", "bottom.png", 
+				   "bottom-right.png"},
+				  {"left.png", "centre.png", "right.png"}};
+  // PIXMAPDIR should be defined elsewhere, such as the command line
+  // (i.e. "-DPIXMAPDIR=...") but I assign it to a string because I'm
+  // as wimp and I like type-checking.  I miss Modula-2\ldots
+  const char *pixmap_path = PIXMAPDIR;
+
+  int pixmap_path_len = strlen(pixmap_path);
+  int icon_name_len = 0;
+  char *icon_file_name = NULL;
+
+  GdkPixbuf *icon_pixbuf = NULL;
+  GdkPixmap *icon_pixmap = NULL;
+  GdkBitmap *icon_mask = NULL;
+  GtkWidget *icon_widget = NULL;
+
+  // Create the array to hold the icons
+  icons = calloc(9, sizeof(GtkWidget *));
+  if (icons == NULL)
+    {
+      perror ("Could not create \"icons\"");
+      exit (20432);
+    }
+  
+  for (i = 0; i < 3; i++)
+    {
+      for (j = 0; j < 3; j++)
+	{
+	  // Calculate the length of the complete file name: length of
+	  // the filename + length of path + slash + \0.  We need this
+	  // value twice, so it is assigned to a variable.
+	  icon_name_len = strlen(icon_names[i][j]) + pixmap_path_len + 2;
+	  icon_file_name = calloc(icon_name_len, sizeof(char));
+	  if (icon_file_name == NULL)
+	    {
+	      perror("Could not create \"icon_file_name\"");
+	      exit(20433);
+	    }
+	  snprintf (icon_file_name, icon_name_len, "%s/%s", 
+		    pixmap_path, icon_names[i][j]);
+
+	  // Load the file, render it, and create the widget.
+	  icon_pixbuf = gdk_pixbuf_new_from_file(icon_file_name);
+	  gdk_pixbuf_render_pixmap_and_mask(icon_pixbuf, &icon_pixmap, 
+					    &icon_mask, 128);
+	  icon_widget = gtk_pixmap_new(icon_pixmap, icon_mask);
+	  // Add the widget to the array of pixmaps
+	  icons[(3*i) + j] = icon_widget;
+	  
+	  free(icon_file_name);
+	}
+    }
+  return icons;
 }

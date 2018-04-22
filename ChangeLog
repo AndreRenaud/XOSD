@@ -1,3 +1,14 @@
+2.0.1:  
+	xosd.h header file patch (Tim Wright)
+	set_font patch (Jan Starzynski)
+	-Wall compiler flag (Tim Wright)
+	fixed bugs that -Wall indicated were potential bugs (Tim Wright)
+	new man pages (Michael JasonSmith --- we're moving to an XML file
+	  format for man pages)
+	cool xmms plugin patch (Michael JasonSmith)
+	osd_cat incorrect argument patch (Tim Wright)
+	horizontal offset xmms patch (Tim Wright)
+	
 2.0.0: 
         XMMS plugin configure patch (Michael JasonSmith)
 	new xosd_init function added. The other one will be
@@ -96,7 +107,8 @@
 	Completly fucked the automake system (again), but managed to 
 	         back out of those changes (Tim Wright)
 	
-1.0.0-pre1: New maintainer: Tim Wright (tnw13@cosc.canterbury.ac.nz)
+1.0.0-pre1: 
+	New maintainer: Tim Wright (tnw13@cosc.canterbury.ac.nz)
 	Applied autoconf patch
 	Applied DTM's xmms_osd patch
 	Applied Locale patch (unknown author)
@@ -106,14 +118,16 @@
 	Applied shadow and offset patch   (Malcolm Valentine <farkit@iprimus.com.au>)
 	Applied Concurrency Control patch (Tim Wright)
 
-0.6.0:  Fixed problem in Makefile which caused it to link against an older 
+0.6.0:  
+	Fixed problem in Makefile which caused it to link against an older 
 		version of the library
  	Added command line parameters to osd_cat
         Added a manual page to osd_cat
         Fixed manual page xosd.3
         Cleand up the Makefile 
 
-0.5.0:  Fixed problem when using multiple screens, no longer fixed to first
+0.5.0:  
+	Fixed problem when using multiple screens, no longer fixed to first
 		screen
 	Fixed bug in xmms plugin which was forcing it to always display at the
 		bottom of screen
@@ -122,11 +136,13 @@
 	Fixed bug when enlarging font and it getting cut off
 	Again attempted to update always on top... this is annoying
 
-0.4.0:  Added unicode character support (thanks for the patch)
+0.4.0:  
+	Added unicode character support (thanks for the patch)
 	Added error messages if shape extension is unavailable
 	Update Configuration Dialog, now looks much nicer
 
-0.3.0:  Added program osd_cat (useful (sortof) for xconsole type display)
+0.3.0:  
+	Added program osd_cat (useful (sortof) for xconsole type display)
 	Fixed segfault with empty playlist while XOSD is running
 	Another attempt at getting always on top to go (ARGH!)
 	Added font selection dialog to config dialog
@@ -146,8 +162,11 @@
 	Now always on top
 	Fixed crash on exit bug, although I think another still exists
 
-0.0.3: Added Config Dialog
+0.0.3: 
+        Added Config Dialog
 
-0.0.2: I can't remember what changes I made
+0.0.2: 
+	I can't remember what changes I made
 
-0.0.1: Initial Release
+0.0.1: 
+	Initial Release

@@ -177,7 +177,7 @@ int xosd_set_align (xosd *osd, xosd_align align);
 */
 int xosd_set_shadow_offset (xosd *osd, int shadow_offset);
 
-/* xosd_set_offset -- Change the number of pixels the display is
+/* xosd_set_horizontal_offset -- Change the number of pixels the display is
  *                    offset from the position
  *
  * ARGUMENTS
@@ -190,7 +190,23 @@ int xosd_set_shadow_offset (xosd *osd, int shadow_offset);
  *  -1 on failure
  *
 */
-int xosd_set_offset (xosd *osd, int offset);
+int xosd_set_horizontal_offset (xosd *osd, int offset);
+
+
+/* xosd_set_vertical_offset -- Change the number of pixels the display is
+ *                    offset from the position
+ *
+ * ARGUMENTS
+ *     osd      The xosd "object".
+ *     offset   The number of pixels the display is offset from the
+ *              position.
+ *
+ * RETURNS
+ *   0 on success
+ *  -1 on failure
+ *
+*/
+int xosd_set_vertical_offset (xosd *osd, int offset);
 
 /* xosd_set_timeout -- Change the time before display is hidden.
  *

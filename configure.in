@@ -4,10 +4,10 @@ AC_INIT(src/testprog.c)
 # version crud for libraries
 LT_CURRENT=2
 LT_AGE=0
-LT_REVISION=0
+LT_REVISION=1
 
 # version for tar file
-VERSION=2.0.0
+VERSION=2.0.1
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
@@ -34,7 +34,7 @@ sed -e 's/^build_old_libs=yes/build_old_libs=no/' libtool > libtool-disable-stat
 chmod +x libtool-disable-static
 
 LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
-CFLAGS="$CFLAGS $X_CFLAGS"
+CFLAGS="$CFLAGS $X_CFLAGS -Wall"
 M4DATADIR="$datadir/aclocal"
 AC_SUBST(M4DATADIR)
 
@@ -89,9 +89,23 @@ fi
 dnl Plugin selection ends
 AC_SUBST(SELECTED_PLUGINS)
 
+dnl --=mjs=-- Check for gdk-pixmap libs.  There is probably a better
+dnl way to do this, but I don't know it.
+AC_PATH_PROG(gdk_pixbuf_config_script, gdk-pixbuf-config, "none")
+GDK_PIXBUF_CFLAGS=`$gdk_pixbuf_config_script --cflags`
+GDK_PIXBUF_LIBS=`$gdk_pixbuf_config_script --libs`
+AC_SUBST(GDK_PIXBUF_CFLAGS)
+AC_SUBST(GDK_PIXBUF_LIBS)
+
 dnl Define XOSD_VERSION
 dnl XOSD_VERSION=${VERSION}
 AC_DEFINE_UNQUOTED(XOSD_VERSION, "${VERSION}")
+
+dnl Pass the "data" ditectory as a #define symbol, so we can find the 
+dnl pixmaps (--=mjs=-- thanks Julien Blache).
+CFLAGS="${CFLAGS} -DPIXMAPDIR=\\\"\$(datadir)/xosd\\\""
+
+dnl Produce Output files
 
 AC_OUTPUT([
 Makefile
@@ -100,6 +114,7 @@ src/libxosd/Makefile
 src/xmms_plugin/Makefile
 macros/Makefile
 man/Makefile
+pixmaps/Makefile
 script/Makefile
 script/xosd-config
 xosd.spec

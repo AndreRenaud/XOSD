@@ -106,6 +106,7 @@ int main (int argc, char *argv[])
 	  break;
 	case '?':
 	case 'h':
+	default:
 	  fprintf (stderr, "Usage: %s [OPTION] [FILE]...\n", argv[0]);
 	  fprintf (stderr, "Version: %s \n", XOSD_VERSION);
 	  fprintf (stderr, "Display FILE, or standard input, on top of display.\n\n");
