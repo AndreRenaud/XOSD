@@ -56,7 +56,6 @@ ldconfig
 
 %files
 %defattr(-, root, root)
-%{_libdir}/libxosd.so.@VERSION@
 %{_libdir}/libxosd.so.@LT_CURRENT@
 %{_libdir}/libxosd.so
 %{_bindir}/osd_cat

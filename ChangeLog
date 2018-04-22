@@ -1,3 +1,9 @@
+2.2.1:
+        Made the underscores disappear correctly (James Roberts-Thomson)
+	xmms plugin breakdown and breakup (Philipp Matthias Hahn)
+	Configure.in xinerama patch (Julio Merino)
+	configure.in -> configure.ac conversion (Philipp Matthias Hahn)
+
 2.2.0:
 	Man pages for xosd_is_onscreen and xosd_set_bar_length (Michael JasonSmith)
 	Makefile patches (Philipp Matthias Hahn)

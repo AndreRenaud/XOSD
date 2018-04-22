@@ -4,9 +4,9 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PKG_NAME="the package."
+PKG_NAME="xosd."
 
-(test -f $srcdir/configure.in) || {
+(test -f $srcdir/configure.ac) || {
     echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
     echo " top-level directory"
     exit 1

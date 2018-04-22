@@ -1,4 +1,4 @@
-AM_CFLAGS=-I$(top_srcdir)/src
+AM_CFLAGS = -I$(top_srcdir)/src
 # Library
 lib_LTLIBRARIES 	= libxosd.la
 libxosd_la_SOURCES 	= xosd.c

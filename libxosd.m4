@@ -11,7 +11,7 @@ AC_DEFUN(AM_PATH_LIBXOSD,
 dnl Get the cflags and libraries from the xosd-config script
 dnl
 AC_ARG_WITH(xosd-config,
-[  --with-xosd-config=LIBXOSD_CONFIG  Location of xosd-config],
+AC_HELP_STRING([--with-xosd-config=LIBXOSD_CONFIG],[Location of xosd-config]),
 LIBXOSD_CONFIG="$withval")
 
 AC_PATH_PROG(LIBXOSD_CONFIG, xosd-config, no)
