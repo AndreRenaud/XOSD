@@ -10,7 +10,7 @@ testprog_LDADD 	= libxosd/libxosd.la
 
 include_HEADERS = xosd.h
 
-CFLAGS=@CFLAGS@ ${GTK_CFLAGS}
+AM_CFLAGS=${GTK_CFLAGS}
 
 # Plugins (configure will determine what to build)
 SUBDIRS=libxosd @SELECTED_PLUGINS@ 

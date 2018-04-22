@@ -1,4 +1,4 @@
-CFLAGS=@CFLAGS@ -I..
+AM_CFLAGS=-I..
 # Library
 lib_LTLIBRARIES 	= libxosd.la
 libxosd_la_SOURCES 	= xosd.c

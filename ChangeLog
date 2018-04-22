@@ -1,7 +1,16 @@
-
+2.1.3:
+       configureable pixmap directory (Philipp Matthias Hahn)
+       strange pause on stop behaviour fix (Philipp Matthias Hahn)
+       ChangeLog name spell fix (Philipp Matthias Hahn)
+       Misc configure and automake changes (Philipp Matthias Hahn)
+       Update all Makefile.am for AutoMake 1.7.3 (Tim Wright)
+       Remembered to run configure with --enable-old-plugin=yes before running
+	'make dist' so that the distubition will have the old plugin 
+	included (Tim Wright)
+	
 2.1.2: 
        Xosd man page fix (Matthew Slowe)
-       undo xosd_create / xost_init mixup from 2.1.1 (Philipp Hann)
+       undo xosd_create / xost_init mixup from 2.1.1 (Philipp Hahn)
       
 	
 2.1.1: Philipp Matthias Hahn (the Debian Maintainer) sent in a huge patch:

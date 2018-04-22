@@ -1,6 +1,6 @@
 # XMMS library
 
-CFLAGS=@CFLAGS@ @XMMS_CFLAGS@ @GTK_CFLAGS@ -I..
+AM_CFLAGS=@XMMS_CFLAGS@ @GTK_CFLAGS@ -I..
 
 xmmsplugindir = ${XMMS_PLUGIN_DIR}
 

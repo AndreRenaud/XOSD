@@ -943,6 +943,8 @@ static gint timeout_func(gpointer data)
 	}
 
       previous_playing = playing;
+      previous_paused = paused;
+      
     }
 
   else if (paused != previous_paused && show_pause)
@@ -1043,7 +1045,7 @@ void show_item(GtkWidget* vbox, const char* description, int selected, GtkToggle
  *    window: one for each compass point and one for the center.
  *    "position_icons_new" loads these icons and returns them as an
  *    array.  The directory that holds the PNG image files used for
- *    the icons is defined by the CPP definition PIXMAPDIR
+ *    the icons is defined by the CPP definition XMMS_PIXMAPDIR
  *
  * ARGUMENTS
  *    None.
@@ -1053,7 +1055,7 @@ void show_item(GtkWidget* vbox, const char* description, int selected, GtkToggle
  *
  * DEPENDS
  *    Libraries: gtk, gdk-pixbuf, stdlib, stdio
- *    CPP Definitions: PIXMAPDIR
+ *    CPP Definitions: XMMS_PIXMAPDIR
  */
 GtkWidget **position_icons_new(void)
 {
@@ -1065,10 +1067,10 @@ GtkWidget **position_icons_new(void)
 				  {"bottom-left.png", "bottom.png", 
 				   "bottom-right.png"},
 				  {"left.png", "centre.png", "right.png"}};
-  // PIXMAPDIR should be defined elsewhere, such as the command line
-  // (i.e. "-DPIXMAPDIR=...") but I assign it to a string because I'm
+  // XMMS_PIXMAPDIR should be defined elsewhere, such as the command line
+  // (i.e. "-DXMMS_PIXMAPDIR=...") but I assign it to a string because I'm
   // as wimp and I like type-checking.  I miss Modula-2\ldots
-  const char *pixmap_path = PIXMAPDIR;
+  const char *pixmap_path = XMMS_PIXMAPDIR;
 
   int pixmap_path_len = strlen(pixmap_path);
   int icon_name_len = 0;

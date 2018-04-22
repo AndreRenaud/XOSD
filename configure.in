@@ -4,10 +4,10 @@ AC_INIT(src/testprog.c)
 # version crud for libraries
 LT_CURRENT=3
 LT_AGE=1
-LT_REVISION=2
+LT_REVISION=3
 
 # version for tar file
-VERSION=2.1.2
+VERSION=2.1.3
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
@@ -64,6 +64,14 @@ AC_ARG_WITH(plugindir,
   [  --with-plugindir=<DIR>        Set the xmms plugin directory ],
   [ XMMS_PLUGIN_DIR="$withval" ],
   [ XMMS_PLUGIN_DIR="" ])
+
+dnl Override where to place pixmaps for libxmms_xosd.so
+AC_ARG_WITH(pixmapdir,
+  [  --with-pixmapdir=<DIR>        Set the directory for xmms plugin pixmaps ],
+  [ XMMS_PIXMAPDIR="$withval" ],
+  [ XMMS_PIXMAPDIR="${datadir}/xosd" ])
+AC_SUBST(XMMS_PIXMAPDIR)
+AC_DEFINE_UNQUOTED(XMMS_PIXMAPDIR, "$XMMS_PIXMAPDIR")
 
 dnl Plugin selection starts
 SELECTED_PLUGINS=
@@ -138,10 +146,6 @@ AC_SUBST(SELECTED_PLUGINS)
 dnl Define XOSD_VERSION
 dnl XOSD_VERSION=${VERSION}
 AC_DEFINE_UNQUOTED(XOSD_VERSION, "${VERSION}")
-
-dnl Pass the "data" ditectory as a #define symbol, so we can find the 
-dnl pixmaps (--=mjs=-- thanks Julien Blache).
-CFLAGS="${CFLAGS} -DPIXMAPDIR=\\\"\$(datadir)/xosd\\\""
 
 EXTRA_DIST=xosd.spec
 
