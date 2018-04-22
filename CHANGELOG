@@ -1,3 +1,5 @@
+0.6.1:  Fixed bug on non-Gnome compliant window managers
+
 0.6.0:  Fixed problem in Makefile which caused it to link against an older 
 		version of the library
  	Added command line parameters to osd_cat
