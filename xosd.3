@@ -22,6 +22,8 @@ xosd - X on-screen display library
 .sp
 .BI "int xosd_set_offset (xosd* " osd ", int " offset );
 .sp
+.BI "int xosd_set_shadow_offset (xosd* " osd ", int " shadow_offset );
+.sp
 .BI "int xosd_set_timeout (xosd* " osd ", int " timeout );
 .sp
 .BI "int xosd_set_font (xosd* " osd ", char* " font );
@@ -49,9 +51,24 @@ or
 (for the top or the bottom of the screen)
 .IP \fIoffset\fP 1i
 Offset from the top or bottom of the screen.
+.IP \fIshadow_offset\fP 1i
+Offset of black shadow from main text.
 .IP \fIosd\fP 1i
 The on-screen display object to act on.
-
+.IP \fIcommand\fp 1i
+One of 
+.B XOSD_percentage
+,
+.B XOSD_slider
+,
+.B XOSD_string
+or
+.B XOSD_printf
+. XOSD_percentage take a single int argument (from 0 - 100) and displays the
+appropriate number of bars, XOSD_slider is similar, except it only displays
+a line at the exact percentage required, rather than a full bar up to that
+point, XOSD_string takes a single char *, and XOSD_printf takes a print 
+style string, and its arguments.
 .SH DESCRIPTION
 xosd is a library for displaying an on-screen display (like the one on
 many TVs) on your X display.
@@ -62,10 +79,9 @@ http://www.ignavus.net/software.html
 It is distributed under the GNU General Public License.
 
 .SH BUGS
-If you change the font on the fly (using the
-.B xosd_set_font
-function), and the new font is larger than the old one, the new font
-will be clipped. This bug will be fixed in an upcoming release.
+No known bugs at the moment.
+.sp
+Bug reports can be sent to xosd@ignavus.net
 
 .SH EXAMPLE
 .nf
@@ -75,7 +91,7 @@ int main (int argc, char *argv[])
 {
 	xosd *osd;
 
-	osd = xosd_init ("fixed", "LawnGreen", 3, XOSD_top, 0);
+	osd = xosd_init ("fixed", "LawnGreen", 3, XOSD_top, 0, 1);
 
 	xosd_display (osd, 0, XOSD_string, "Example XOSD output");
 

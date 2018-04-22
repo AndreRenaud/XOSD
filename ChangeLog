@@ -1,0 +1,61 @@
+0.7.0:  Added "XOSD_Slider" type to possible display types
+	Added balance display to xmms plugin
+	Fixed spelling mistake in osd_cat man page
+	Added "Apply" button to xmms plugin config dialog
+	Fixed a bug in set_font which caused it to crash if the font was 
+		non-existant
+	Added GPL to the top of xmms_osd.c
+	Moved some files around to be more GNU style compliant (Added empty
+		file NEWS)
+	Added Drop Shadows, as well as new function to set them (NOTE: This
+		changes the number of args xosd_init takes, so old programs 
+		will be incompatible. Sorry)
+	Updated man page to reflect API change
+
+0.6.1:  Fixed bug on non-Gnome compliant window managers
+
+0.6.0:  Fixed problem in Makefile which caused it to link against an older 
+		version of the library
+ 	Added command line parameters to osd_cat
+        Added a manual page to osd_cat
+        Fixed manual page xosd.3
+        Cleand up the Makefile 
+
+0.5.0:  Fixed problem when using multiple screens, no longer fixed to first
+		screen
+	Fixed bug in xmms plugin which was forcing it to always display at the
+		bottom of screen
+	Fixed bug in osd_cat causing problems if osd couldn't be initialized
+	Added ability to never timeout (set timeout to -1)
+	Fixed bug when enlarging font and it getting cut off
+	Again attempted to update always on top... this is annoying
+
+0.4.0:  Added unicode character support (thanks for the patch)
+	Added error messages if shape extension is unavailable
+	Update Configuration Dialog, now looks much nicer
+
+0.3.0:  Added program osd_cat (useful (sortof) for xconsole type display)
+	Fixed segfault with empty playlist while XOSD is running
+	Another attempt at getting always on top to go (ARGH!)
+	Added font selection dialog to config dialog
+	Added colour selection dialog to config dialog
+	Updates window size when font changes
+	Updated percentage display to use proper bars, not '|' & '-'
+
+0.2.0:
+	Added option to change offset & position of xosd display
+	Fixed another crash on exit bug, no longer segfaults xmms now
+		(at least on my machine)
+	Fixed always on top to use the correct hint. Damn magic numbers
+
+0.1.0:
+	Added option to change timeout length (default: 3 secs)
+	Fixed it to  dynamically apply changes, colour, font, timeout etc..
+	Now always on top
+	Fixed crash on exit bug, although I think another still exists
+
+0.0.3: Added Config Dialog
+
+0.0.2: I can't remember what changes I made
+
+0.0.1: Initial Release

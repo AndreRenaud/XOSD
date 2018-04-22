@@ -81,7 +81,7 @@ int main (int argc, char *argv[])
    else
       fp = stdin;
    
-   osd = xosd_init (font, color, delay, pos, offset);
+   osd = xosd_init (font, color, delay, pos, offset, 0);
    if (!osd)
       {
       fprintf (stderr, "Error initializing osd\n");

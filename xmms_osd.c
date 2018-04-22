@@ -1,3 +1,22 @@
+/* XOSD
+ 
+  Copyright (c) 2001 Andre Renaud (andre@ignavus.net)
+ 
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+
 #include <gtk/gtk.h>
 
 #include <unistd.h>
@@ -34,16 +53,17 @@ GeneralPlugin gp =
 
 xosd *osd;
 guint timeout_tag;
-int previous_song, previous_length, previous_volume;
+int previous_song, previous_length, previous_volume, previous_balance;
 gboolean previous_playing, previous_paused, previous_repeat, previous_shuffle;
 gchar *font;
 gchar *colour;
 gint timeout;
 gint offset;
+gint shadow_offset;
 gint pos;
-GtkObject *timeout_obj, *offset_obj;
+GtkObject *timeout_obj, *offset_obj, *shadow_obj;
 GtkWidget *configure_win, *font_entry, *colour_entry, 
-   *timeout_spin, *offset_spin, *pos_top, *pos_bottom;
+   *timeout_spin, *offset_spin, *pos_top, *pos_bottom, *shadow_spin;
 
 GeneralPlugin *get_gplugin_info(void)
    {
@@ -64,7 +84,7 @@ static void init(void)
    previous_volume = previous_length = previous_song = 
       0;   
 
-   osd = xosd_init (font, colour, timeout, pos, offset);
+   osd = xosd_init (font, colour, timeout, pos, offset, shadow_offset);
    if (osd)
       timeout_tag = gtk_timeout_add (100, timeout_func, NULL);
    }
@@ -95,6 +115,7 @@ static void read_config (void)
    font = NULL;
    timeout = 3;
    offset = 50;
+   shadow_offset = 1;
    pos = XOSD_bottom;
    
    if ((cfgfile = xmms_cfg_open_default_file ()) != NULL)
@@ -104,6 +125,7 @@ static void read_config (void)
       xmms_cfg_read_int (cfgfile, "osd", "timeout", &timeout);
       xmms_cfg_read_int (cfgfile, "osd", "offset", &offset);
       xmms_cfg_read_int (cfgfile, "osd", "pos", &pos);
+      xmms_cfg_read_int (cfgfile, "osd", "shadow_offset", &shadow_offset);
       xmms_cfg_free(cfgfile);
       }
    
@@ -113,7 +135,7 @@ static void read_config (void)
       colour = g_strdup ("green");
    }
 
-static void configure_ok_cb (gpointer data)
+static void configure_apply_cb (gpointer data)
    {
    ConfigFile *cfgfile;
 
@@ -126,6 +148,7 @@ static void configure_ok_cb (gpointer data)
    font = g_strdup (gtk_entry_get_text (GTK_ENTRY (font_entry)));
    timeout = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (timeout_spin));
    offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (offset_spin));
+   shadow_offset = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (shadow_spin));
    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (pos_top)))
       pos = XOSD_top;
    else
@@ -137,6 +160,7 @@ static void configure_ok_cb (gpointer data)
       xosd_set_font (osd, font);
       xosd_set_timeout (osd, timeout);
       xosd_set_offset (osd, offset);
+      xosd_set_shadow_offset (osd, shadow_offset);
       xosd_set_pos (osd, pos);
       }
 
@@ -145,11 +169,18 @@ static void configure_ok_cb (gpointer data)
    xmms_cfg_write_string(cfgfile, "osd", "font", font);
    xmms_cfg_write_int(cfgfile, "osd", "timeout", timeout);
    xmms_cfg_write_int(cfgfile, "osd", "offset", offset);
+   xmms_cfg_write_int(cfgfile, "osd", "shadow_offset", shadow_offset);
    xmms_cfg_write_int(cfgfile, "osd", "pos", pos);
    xmms_cfg_write_default_file(cfgfile);
    xmms_cfg_free(cfgfile);
+   }
+
+static void configure_ok_cb (gpointer data)
+   {
+   configure_apply_cb (data);
    
    gtk_widget_destroy (configure_win);
+   configure_win = NULL;
    }
 
 static int font_dialog_ok (GtkButton *button, gpointer user_data)
@@ -363,6 +394,20 @@ static void configure (void)
       gtk_spin_button_set_value (GTK_SPIN_BUTTON (offset_spin),
 				 (gfloat) offset);
    gtk_box_pack_start (GTK_BOX (hbox), offset_spin, FALSE, FALSE, 0);   
+   unit_label = gtk_label_new ("pixels");
+   gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);   
+   
+   hbox = gtk_hbox_new (FALSE, 5);
+   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+   label = gtk_label_new ("Shadow Offset:");
+   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+   shadow_obj = gtk_adjustment_new (timeout, 0, 60, 1, 1, 1);
+   shadow_spin = gtk_spin_button_new (GTK_ADJUSTMENT (shadow_obj), 1.0, 0);
+   gtk_spin_button_set_value (GTK_SPIN_BUTTON (shadow_spin),
+			      (gfloat) shadow_offset);
+   gtk_box_pack_start (GTK_BOX (hbox), shadow_spin, FALSE, FALSE, 0);   
+   unit_label = gtk_label_new ("pixels");
+   gtk_box_pack_start (GTK_BOX (hbox), unit_label, FALSE, FALSE, 0);      
    
    hbox = gtk_hbox_new (FALSE, 5);
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
@@ -390,6 +435,12 @@ static void configure (void)
    GTK_WIDGET_SET_FLAGS (ok, GTK_CAN_DEFAULT);
    gtk_box_pack_start (GTK_BOX (bbox), ok, TRUE, TRUE, 0);
    gtk_widget_grab_default (ok);
+   
+   apply = gtk_button_new_with_label ("Apply");
+   gtk_signal_connect (GTK_OBJECT (apply), "clicked", 
+		       GTK_SIGNAL_FUNC (configure_apply_cb), NULL);
+   GTK_WIDGET_SET_FLAGS (apply, GTK_CAN_DEFAULT);
+   gtk_box_pack_start (GTK_BOX (bbox), apply, TRUE, TRUE, 0);
    
    cancel = gtk_button_new_with_label ("Cancel");
    gtk_signal_connect_object (GTK_OBJECT (cancel), "clicked",
@@ -431,7 +482,7 @@ static void replace_hexcodes (gchar *text)
 
 static gint timeout_func(gpointer data)
    {
-   gint pos, length, volume;
+   gint pos, length, volume, balance;
    gboolean playing, paused, repeat, shuffle;
    gchar *text;
 
@@ -447,6 +498,7 @@ static gint timeout_func(gpointer data)
    volume = xmms_remote_get_main_volume (gp.xmms_session);
    shuffle = xmms_remote_is_shuffle (gp.xmms_session);
    repeat = xmms_remote_is_repeat (gp.xmms_session);
+   balance = (xmms_remote_get_balance(gp.xmms_session) + 100) / 2;
    
    if (pos != previous_song || length != previous_length)
       {
@@ -462,6 +514,7 @@ static gint timeout_func(gpointer data)
       previous_song = pos;
       previous_length = length;      
       }
+
    else if (playing != previous_playing)
       {
       if (playing)
@@ -502,6 +555,14 @@ static gint timeout_func(gpointer data)
       xosd_display (osd, 0, XOSD_string, "Volume");
       xosd_display (osd, 1, XOSD_percentage, volume);
       previous_volume = volume;
+      }
+   
+   else if (balance != previous_balance)
+      {
+      xosd_display (osd, 0, XOSD_string, "Balance");
+      xosd_display (osd, 1, XOSD_slider, balance);
+      
+      previous_balance = balance;
       }
 
    else if (repeat != previous_repeat)

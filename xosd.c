@@ -40,7 +40,7 @@
 
 #include "xosd.h"
 
-typedef enum {LINE_blank, LINE_text, LINE_percentage} line_type;
+typedef enum {LINE_blank, LINE_text, LINE_percentage, LINE_slider} line_type;
 
 typedef struct
    {
@@ -76,6 +76,7 @@ struct xosd
    int y;
    xosd_pos pos;
    int offset;
+   int shadow_offset;
       
    int mapped;
    int done;
@@ -88,6 +89,35 @@ struct xosd
    int timeout;
    int timeout_time;
    };
+
+static void draw_bar (xosd *osd, Drawable d, GC gc, int x, int y, 
+		      int width, int height, int horiz)
+   {   
+   if (horiz)
+	 XFillRectangle(osd->display, d, gc, x, y, width * 0.7, height);
+   else
+	 XFillRectangle(osd->display, d, gc, x, y + height / 3,
+			width * 0.8, height / 3);      
+   }
+
+static void draw_slider (xosd *osd, Drawable d, GC gc, int x, int y, 
+			 int percent)
+   {
+   int barw, barh;
+   int nbars, on, i;
+   XFontSetExtents *extents = XExtentsOfFontSet(osd->fontset);
+
+   y -= - (extents->max_logical_extent.y);
+
+   barh = - (extents->max_logical_extent.y);
+   barw = barh / 2;
+
+   nbars = (osd->width * 0.8) / barw;
+   on = (nbars - 1) * percent / 100;
+
+   for (i = 0; i < nbars; x += barw, i++)
+      draw_bar (osd, d, gc, x, y, barw, barh, i == on);   
+   }
 
 static void draw_percentage (xosd *osd, Drawable d, GC gc, int x, int y,
 			     int percent)
@@ -105,13 +135,7 @@ static void draw_percentage (xosd *osd, Drawable d, GC gc, int x, int y,
    on = nbars * percent / 100;
 
    for (i = 0; i < nbars; x += barw, i++)
-      {
-      if (i < on)
-	 XFillRectangle(osd->display, d, gc, x, y, barw * 0.7, barh);
-      else
-	 XFillRectangle(osd->display, d, gc, x, y + barh / 3,
-			barw * 0.8, barh / 3);
-      }   
+      draw_bar (osd, d, gc, x, y, barw, barh, i < on);
    }
 
 
@@ -150,6 +174,23 @@ static void expose (xosd *osd)
 			   osd->bitmap_gc, x, y,
 			   text, len);
 
+	    if (osd->shadow_offset)
+	       {
+	       XSetForeground (osd->display, osd->gc, 
+			       BlackPixel(osd->display, osd->screen));
+
+	       XmbDrawString (osd->display, osd->bitmap, osd->fontset,
+			      osd->bitmap_gc, x + osd->shadow_offset, 
+			      y + osd->shadow_offset,
+			      text, len);
+	       XmbDrawString (osd->display, osd->window, osd->fontset,
+			      osd->gc, x + osd->shadow_offset, 
+			      y + osd->shadow_offset,
+			      text, len);
+	       }
+
+	    XSetForeground (osd->display, osd->gc, osd->pixel);
+	    
 	    XmbDrawString (osd->display, osd->window, osd->fontset,
 			   osd->gc, x, y,
 			   text, len);
@@ -160,10 +201,47 @@ static void expose (xosd *osd)
 	    {
 	    draw_percentage (osd, osd->bitmap, osd->bitmap_gc, x, y, 
 			     osd->lines[line].percentage);
+	    
+	    if (osd->shadow_offset)
+	       {
+	       XSetForeground (osd->display, osd->gc, 
+			       BlackPixel(osd->display, osd->screen));
+	       draw_percentage (osd, osd->bitmap, osd->bitmap_gc, 
+				x + osd->shadow_offset, y + osd->shadow_offset,
+				osd->lines[line].percentage);
+	       draw_percentage (osd, osd->window, osd->gc, 
+				x + osd->shadow_offset, y + osd->shadow_offset,
+				osd->lines[line].percentage);
+	       }
+	    
+	    XSetForeground (osd->display, osd->gc, osd->pixel);
 	    draw_percentage (osd, osd->window, osd->gc, x, y,
 			     osd->lines[line].percentage);
 	    break;
-	    }	  
+	    }
+	 
+	 case LINE_slider:
+	    {
+	    draw_slider (osd, osd->bitmap, osd->bitmap_gc, x, y, 
+			 osd->lines[line].percentage);
+	    
+	    if (osd->shadow_offset)
+	       {
+	       XSetForeground (osd->display, osd->gc, 
+			       BlackPixel(osd->display, osd->screen));
+	       draw_slider (osd, osd->bitmap, osd->bitmap_gc, 
+			    x + osd->shadow_offset, y + osd->shadow_offset,
+			    osd->lines[line].percentage);
+	       draw_slider (osd, osd->window, osd->gc, 
+			    x + osd->shadow_offset, y + osd->shadow_offset,
+			    osd->lines[line].percentage);
+	       }
+	    
+	    XSetForeground (osd->display, osd->gc, osd->pixel);
+	    draw_slider (osd, osd->window, osd->gc, x, y,
+			 osd->lines[line].percentage);
+	    break;
+	    }
 	 }
       }
 
@@ -248,10 +326,18 @@ static int display_string (xosd *osd, int line, char *string)
    assert (osd);
    
    osd->lines[line].type = LINE_text;
-   osd->lines[line].text =
-      realloc (osd->lines[line].text, strlen (string) + 1);
    
-   strcpy (osd->lines[line].text, string);
+   if (string)
+      {
+      osd->lines[line].text =
+	 realloc (osd->lines[line].text, strlen (string) + 1);
+      strcpy (osd->lines[line].text, string);
+      }
+   else
+      {
+      osd->lines[line].text = realloc (osd->lines[line].text, 1);
+      osd->lines[line].text[0] = '\0';
+      }
 
    return 0;
    }
@@ -266,6 +352,21 @@ static int display_percentage (xosd *osd, int line, int percentage)
       percentage = 100;
    
    osd->lines[line].type = LINE_percentage;
+   osd->lines[line].percentage = percentage;
+   
+   return 0;
+   }
+
+static int display_slider (xosd *osd, int line, int percentage)
+   {
+   assert (osd);
+   
+   if (percentage < 0)
+      percentage = 0;
+   if (percentage > 100)
+      percentage = 100;
+   
+   osd->lines[line].type = LINE_slider;
    osd->lines[line].percentage = percentage;
    
    return 0;
@@ -317,7 +418,7 @@ static int set_font (xosd *osd, char *font)
    osd->bitmap = XCreatePixmap (osd->display, osd->window,
 				osd->width, osd->height,
 				1);
-   
+
    MUTEX_RELEASE ();
    
    return 0;
@@ -365,7 +466,8 @@ static int set_timeout (xosd *osd, int timeout)
    return 0;
    }
 
-xosd *xosd_init (char *font, char *colour, int timeout, xosd_pos pos, int offset)
+xosd *xosd_init (char *font, char *colour, int timeout, xosd_pos pos, int offset,
+		 int shadow_offset)
    {
    xosd *osd;
    int event_basep, error_basep, inputmask, i;
@@ -475,6 +577,7 @@ xosd *xosd_init (char *font, char *colour, int timeout, xosd_pos pos, int offset
    
    osd->mapped = 0;
    osd->done = 0;
+   osd->shadow_offset = shadow_offset;
 
    for (i = 0; i < NLINES; i++)
       {
@@ -549,8 +652,19 @@ int xosd_display (xosd *osd, int line, xosd_command command, ...)
 	 break;
 	 }
       
+      case XOSD_slider :
+	 {
+	 percent = va_arg (a, int);
+	 
+	 display_slider (osd, line, percent);
+	 
+	 len = percent;
+	 break;
+	 }
+      
       default :
 	 {
+	 len = -1;
 	 fprintf (stderr, "xosd_display: Unknown command: %d\n", command);
 	 }
       }
@@ -587,6 +701,15 @@ static void xosd_update_pos (xosd *osd)
       osd->y = osd->offset;
 
    XMoveWindow (osd->display, osd->window, osd->x, osd->y);
+   }
+
+int xosd_set_shadow_offset (xosd *osd, int shadow_offset)
+   {
+   assert (osd);
+   
+   osd->shadow_offset = shadow_offset;
+   
+   return 0;
    }
 
 int xosd_set_offset (xosd *osd, int offset)
