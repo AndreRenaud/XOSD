@@ -62,10 +62,10 @@ typedef enum
  *     A new xosd structure.
  */
 
-xosd * __deprecated xosd_create(int number_lines);
+xosd *xosd_create(int number_lines);
 
 /* deprecated */
-xosd *xosd_init (const char *font, const char *colour, int timeout,
+xosd * __deprecated xosd_init (const char *font, const char *colour, int timeout,
 		 xosd_pos pos, int offset, int shadow_offset,
 		 int number_lines);
 

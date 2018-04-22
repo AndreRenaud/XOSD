@@ -127,6 +127,7 @@ char* xosd_error;
 static void set_timeout (xosd *);
 static void show (xosd *);
 static void hide (xosd *);
+static void update_pos (xosd *osd);
 
 
 static void draw_bar(xosd *osd, Drawable d, GC gc, int x, int y,
@@ -588,13 +589,38 @@ static void stay_on_top(Display *dpy, Window win)
   XRaiseWindow(dpy, win);
 }
 
-/** Deprecated init. */
-xosd *xosd_create (int number_lines) 
+/** Deprecated init. Use xosd_create. */
+xosd *xosd_init (const char *font, const char *colour, int timeout, xosd_pos pos, int voffset, int shadow_offset, int number_lines)
 {
-  return xosd_init (osd_default_font, osd_default_colour, -1, XOSD_top, 0, 0, number_lines);
+  xosd *osd = xosd_create(number_lines);
+  
+  if (osd == NULL) {
+    return NULL;
+  }
+
+  if (xosd_set_font(osd, font) == -1) {
+    if (xosd_set_font(osd, osd_default_font) == -1) {
+      xosd_destroy (osd);
+      /* 
+	 we do not set xosd_error, as set_font has already
+	 set it to a sensible error message. 
+      */
+      return NULL;
+    } 
+  }
+  xosd_set_colour(osd, colour);
+  xosd_set_timeout(osd, timeout);
+  xosd_set_pos(osd, pos);
+  xosd_set_vertical_offset(osd, voffset);
+  xosd_set_shadow_offset(osd, shadow_offset);
+  
+  resize(osd);
+
+  return osd;
 }
 
-xosd *xosd_init (const char *font, const char *colour, int timeout, xosd_pos pos, int voffset, int shadow_offset, int number_lines)
+/** New init. */
+xosd *xosd_create (int number_lines) 
 {
   xosd *osd;
   int event_basep, error_basep, i;
@@ -647,17 +673,21 @@ xosd *xosd_init (const char *font, const char *colour, int timeout, xosd_pos pos
   DEBUG("misc osd variable initialization");
   osd->mapped = 0;
   osd->done = 0;
+  osd->pos = XOSD_top;
+  osd->hoffset = 0;
   osd->align = XOSD_left;
-  osd->display = XOpenDisplay (display);
+  osd->voffset = 0;
+  osd->timeout = -1;
+  osd->timeout_time.tv_sec = 0;
+  osd->fontset = NULL;
 
   DEBUG("Display query");
+  osd->display = XOpenDisplay (display);
   if (!osd->display) {
     xosd_error = "Cannot open display";
     goto error2;
   }
-
   osd->screen = XDefaultScreen (osd->display);
-
 
   DEBUG("x shape extension query");
   if (!XShapeQueryExtension (osd->display, &event_basep, &error_basep)) {
@@ -669,17 +699,12 @@ xosd *xosd_init (const char *font, const char *colour, int timeout, xosd_pos pos
   osd->depth = DefaultDepth (osd->display, osd->screen);
 
   DEBUG("font selection info");
-  osd->fontset=NULL;
-
-  if (font && set_font(osd, font) == -1) {
-    if (osd_default_font && set_font(osd, osd_default_font) == -1) {
-      /* if we still don't have a fontset, then abort */
-      xosd_error = "Default font not found";
-    }
-    /* else inherit error message from set_fontset() */
-  }
-  if (!osd->fontset)
+  set_font(osd, osd_default_font);
+  if (osd->fontset == NULL) {
+    /* if we still don't have a fontset, then abort */
+    xosd_error="Default font not found";
     goto error3;
+  }
 
   DEBUG("width and height initialization"); 
   osd->width = XDisplayWidth (osd->display, osd->screen); 
@@ -701,13 +726,6 @@ xosd *xosd_init (const char *font, const char *colour, int timeout, xosd_pos pos
       &setwinattr);
   XStoreName (osd->display, osd->window, "XOSD");
 
-  DEBUG("setting pos");
-  xosd_set_pos (osd, pos);
-  DEBUG("setting vertical offset");
-  xosd_set_vertical_offset (osd, voffset);
-  DEBUG("setting horizontal offset");
-  xosd_set_horizontal_offset (osd, 0); 
-
   osd->mask_bitmap = XCreatePixmap (osd->display, osd->window, osd->width, osd->height, 1);
   osd->line_bitmap = XCreatePixmap (osd->display, osd->window, osd->width,
      osd->line_height, osd->depth);
@@ -724,11 +742,7 @@ xosd *xosd_init (const char *font, const char *colour, int timeout, xosd_pos pos
 
 
   DEBUG("setting colour");
-  set_colour (osd, colour); 
-  DEBUG("setting shadow offset");
-  xosd_set_shadow_offset(osd, shadow_offset);
-  DEBUG("setting timeout");
-  xosd_set_timeout (osd, timeout); 
+  set_colour (osd, osd_default_colour); 
 
   DEBUG("Request exposure events");
   XSelectInput (osd->display, osd->window, ExposureMask);
@@ -737,6 +751,7 @@ xosd *xosd_init (const char *font, const char *colour, int timeout, xosd_pos pos
   stay_on_top(osd->display, osd->window);
   
   DEBUG("finale resize");
+  update_pos (osd); /* Shoule be inside lock, but no threads yet */
   resize(osd); /* Shoule be inside lock, but no threads yet */
 
   DEBUG("initializing event thread");
@@ -760,6 +775,7 @@ xosd *xosd_init (const char *font, const char *colour, int timeout, xosd_pos pos
   return NULL;
 }
 
+/** Deprecated uninit. Use xosd_destroy. */
 int xosd_uninit (xosd *osd) {
   return xosd_destroy(osd);
 }

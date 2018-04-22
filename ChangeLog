@@ -1,3 +1,9 @@
+
+2.1.2: 
+       Xosd man page fix (Matthew Slowe)
+       undo xosd_create / xost_init mixup from 2.1.1 (Philipp Hann)
+      
+	
 2.1.1: Philipp Matthias Hahn (the Debian Maintainer) sent in a huge patch:
  	Fix library version number schema
  	Fail on missing fontset instead of crashing
