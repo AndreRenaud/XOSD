@@ -23,6 +23,9 @@
 #define SLIDER_SCALE_ON 0.7
 #define XOFFSET 10
 
+#define DEBUG_XSHAPE
+#undef DEBUG_XSHAPE
+
 const char *osd_default_font =
   "-misc-fixed-medium-r-semicondensed--*-*-*-*-c-*-*-*";
 #if 0
@@ -102,7 +105,7 @@ draw_bar(xosd * osd, int line)
   int is_slider = l->type == LINE_slider, nbars, on;
   XRectangle p, m;
   p.x = XOFFSET;
-  p.y = osd->line_height * line;
+  p.y = 0;
   p.width = -osd->extent->y / 2;
   p.height = -osd->extent->y;
 
@@ -174,7 +177,7 @@ _draw_text(xosd * osd, char *string, int x, int y)
 static void
 draw_text(xosd * osd, int line)
 {
-  int x = XOFFSET, y = osd->line_height * line - osd->extent->y;
+  int x = XOFFSET, y = -osd->extent->y;
   struct xosd_text *l = &osd->lines[line].text;
 
   assert(osd);
@@ -882,7 +885,7 @@ xosd_display(xosd * osd, int line, xosd_command command, ...)
   case XOSD_string:
   case XOSD_printf:
     {
-      char buf[2000];
+      char buf[XOSD_MAX_PRINTF_BUF_SIZE];
       struct xosd_text *l = &osd->lines[line].text;
       char *string = va_arg(a, char *);
       if (command == XOSD_printf) {

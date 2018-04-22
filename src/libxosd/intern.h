@@ -146,5 +146,7 @@ struct xosd
   struct timeval timeout_start; /* DYN Absolute start of timeout */
 };
 
+static const int XOSD_MAX_PRINTF_BUF_SIZE=2000;
+
 /* vim: foldmethod=marker tabstop=2 shiftwidth=2 expandtab
  */

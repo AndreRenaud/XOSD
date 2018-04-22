@@ -1,13 +1,12 @@
 
 2.3.0: 
-        Applied 30 patches from the Debian maintainer. I thought that he
+        Applied 35 patches from the Debian maintainer. I thought that he
 	was being quiet, but it turns out that my email had magically
 	decided to stop forwarding and I wasn't getting any of his
 	emails. <insert rant about university IT departments here>.
 
-	Decided to change numbers to 2.3.0 because I can (and I think that
-	one of the patches requires this update:)
-	
+	Complete rewrite of libxosd to use only one thread calling X11.
+	osd_cat --age parameter is now optional.
 
 2.2.8:
 	investigated using indent. From now on I'll use these arguments to

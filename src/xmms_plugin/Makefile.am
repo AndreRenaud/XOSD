@@ -8,13 +8,13 @@ xmmsplugindir = @XMMS_PLUGIN_DIR@
 # Don't build a static library
 LIBTOOL = $(top_builddir)/libtool-disable-static
  
-xmmsplugin_LTLIBRARIES =
 if BUILD_NEW_PLUGIN
-xmmsplugin_LTLIBRARIES += libxmms_osd.la
+NEW_xmmsplugin = libxmms_osd.la
 endif
 if BUILD_OLD_PLUGIN
-xmmsplugin_LTLIBRARIES += libxmms_osd_old.la
+OLD_xmmsplugin = libxmms_osd_old.la
 endif
+xmmsplugin_LTLIBRARIES = $(NEW_xmmsplugin) $(OLD_xmmsplugin)
 
 libxmms_osd_la_SOURCES = xmms_osd.c dlg_config.c dlg_font.c dlg_colour.c xmms_osd.h
 libxmms_osd_la_LIBADD  = $(top_builddir)/src/libxosd/libxosd.la

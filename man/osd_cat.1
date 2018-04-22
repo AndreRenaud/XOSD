@@ -1,7 +1,7 @@
 .\" Emacs, -*- nroff -*- please
 .TH XOSD 1xosd "January 2001" "X OSD cat"
 .SH NAME
-osd_cat - X on-screen file displayer
+osd_cat \- X on-screen file displayer
 .SH SYNOPSIS
 .B osd_cat
 [\fIOPTION\fP] [\fIFILE\fP]...
@@ -28,28 +28,31 @@ This option tells \fBosd_cat\fP where to display the text. \fIALIGN\fP can be \f
 default is \fBcenter\fP.
 .TP
 \fB\-i\fP, \fB\-\-indent\fP=\fIOFFSET\fP
-This option specifies the \fIindent\fP from the left of screen the text is displayed. The default is \fB0\fP.
+This option specifies the \fIINDENT\fP from the left of screen the text is displayed. The default is \fB0\fP.
 .TP
 \fB\-f\fP, \fB\-\-font\fP=\fIFONT\fP
-This option specifies the \fIfont\fP to be used for displaying the text. The default is \fBfixed\fP.
+This option specifies the \fIFONT\fP to be used for displaying the text. The default is \fBfixed\fP.
 .TP
 \fB\-c\fP, \fB\-\-color\fP=\fICOLOR\fP
-This option specifies the \fIcolor\fP to be used for displaying the text. The default is \fBred\fP. 
+This option specifies the \fICOLOR\fP to be used for displaying the text. The default is \fBred\fP. 
 .TP
 \fB\-d\fP, \fB\-\-delay\fP=\fITIME\fP
 This option specifies the number of seconds the text is displayed. The default is \fB5\fP seconds.
 .TP
 \fB\-l\fP, \fB\-\-lines\fP=\fILINES\fP
-This option specifies the number of \fIlines\fP to scroll the display over. The default is \fB5\fP.
+This option specifies the number of \fILINES\fP to scroll the display over. The default is \fB5\fP.
 .TP
 \fB\-s\fP, \fB\-\-shadow\fP=\fIOFFSET\fP
-This option specifies the \fIoffset\fP of the text shadow. The default is \fB0\fP, which means no text shadow is created.
+This option specifies the \fIOFFSET\fP of the text shadow. The default is \fB0\fP, which means no text shadow is created.
 .TP
-\fB\-a\fP, \fB\-\-age\fP=\fISCROLL_AGE\fP
+\fB\-a\fP, \fB\-\-age\fP[=\fISCROLL_AGE\fP]
 This option affects screen redrawing. If \fISCROLL_AGE\fP seconds pass
 before a new line is ready (for example, you're reading from a pipe),
-the display is cleared instead of being scrolled. The default is
-\fB0\fP, which means all lines are added to the scroll.
+all lines are cleared at once instead of being scrolled off as new lines
+replace old lines. The default is \fB0\fP.
+.br
+When no \fISCROLL_AGE\fP is explicitly given, the current value from
+\fIDELAY\fP is used.
 .TP
 \fB\-w\fP, \fB\-\-wait 
 This option also affects screen redrawing. When there is data ready to
@@ -72,7 +75,7 @@ The default is empty, so no additional text is displayed.
 \fB\-h\fP, \fB\-\-help\fP
 display help (which is often more up to date) and exit
 .PP
-With no FILE, or when FILE is -, read standard input.
+With no \fIFILE\fP, or when \fIFILE\fP is \fB\-\fP, read standard input.
 .SH AUTHOR
 Martijn van de Streek <martijn@foodfight.org>, Some patching done by
 Malcolm Valentine <farkit@iprimus.com.au> and Tim Wright

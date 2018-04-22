@@ -28,7 +28,7 @@ static struct option long_options[] = {
   {"align", 1, NULL, 'A'},
   {"shadow", 1, NULL, 's'},
   {"shadowcolour", 1, NULL, 'S'},
-  {"age", 1, NULL, 'a'},
+  {"age", 2, NULL, 'a'},
   {"lines", 1, NULL, 'l'},
   {"wait", 0, NULL, 'w'},
   {"outline", 1, NULL, 'O'},
@@ -69,14 +69,14 @@ main(int argc, char *argv[])
   while (1) {
     int option_index = 0;
     int c =
-      getopt_long(argc, argv, "l:A:a:f:c:d:o:i:s:p:O:S:u:b:P:T:hw",
+      getopt_long(argc, argv, "l:A:a::f:c:d:o:i:s:p:O:S:u:b:P:T:hw",
                   long_options,
                   &option_index);
     if (c == -1)
       break;
     switch (c) {
     case 'a':
-      scroll_age = atoi(optarg);
+      scroll_age = optarg ? atoi(optarg) : delay;
       break;
     case 'w':
       forcewait = 1;
@@ -186,7 +186,8 @@ main(int argc, char *argv[])
           "                      Offset of outline, default is 0 which is no outline\n"
           "  -u, --outlinecolour=COLOUR\n"
           "                      Colour of outline, default is black\n"
-          "  -a, --age=TIME      Time in seconds before old scroll lines are discarded\n"
+          "  -a, --age[=TIME]    Time in seconds before old scroll lines are discarded\n"
+          "                      If no time is given, the current DELAY is used.\n"
           "  -l, --lines=N       Scroll using n lines. Default is 5.\n"
           "  -d, --delay=TIME    Show for specified time\n"
           "  -w, --wait          Delay display even when new lines are ready\n"
