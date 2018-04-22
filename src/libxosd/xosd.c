@@ -1183,7 +1183,7 @@ int xosd_set_pos (xosd *osd, xosd_pos pos)
 
 	pthread_mutex_lock (&osd->mutex);
 	osd->pos = pos;
-	update_pos (osd);
+	force_redraw(osd, -1);
 	pthread_mutex_unlock (&osd->mutex);
 
 	return 0;

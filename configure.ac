@@ -1,9 +1,9 @@
 dnl
-dnl Configure.ac for xine
+dnl Configure.ac for xosd
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(xosd, 2.2.1)
+AC_INIT(xosd, 2.2.2)
 AC_CONFIG_SRCDIR(src/testprog.c)
 AM_INIT_AUTOMAKE([no-define])
 
@@ -84,13 +84,23 @@ AC_ARG_ENABLE([xinerama],
 
 if test x$disable_xinerama = "xno"
 then
-	AC_CHECK_LIB(Xinerama,
-		     XineramaQueryExtension,
-		     [X_LIBS="$X_LIBS -lXinerama"
-		      AC_DEFINE(HAVE_XINERAMA,1,[Define this if you have libXinerama installed])
-		      ac_have_xinerama="yes"],,
-		     [$X_LIBS $X_PRE_LIBS -lXext $X_EXTRA_LIBS])
+        AC_CHECK_LIB(Xinerama_pic,
+                     XineramaQueryExtension,
+                     [X_LIBS="$X_LIBS -lXinerama_pic"
+                      AC_DEFINE(HAVE_XINERAMA,1,[Define this if you have libXinerama installed])
+                      ac_have_xinerama="yes"],
+                      AC_CHECK_LIB(Xinerama,
+                                   XineramaQueryExtension,
+                                   [X_LIBS="$X_LIBS -lXinerama"
+                                    AC_DEFINE(HAVE_XINERAMA,1,[Define this if you have libXinerama
+installed])
+                                    ac_have_xinerama="yes"],,
+                                    [$X_LIBS $X_PRE_LIBS -lXext $X_EXTRA_LIBS]),
+                     [$X_LIBS $X_PRE_LIBS -lXext $X_EXTRA_LIBS])
 fi
+
+
+
 
 dnl Check for xmms
 AM_PATH_XMMS(1.2.7,,
