@@ -17,6 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include <ctype.h>
 #include <gtk/gtk.h>
 
 #include "bmp_osd.h"
@@ -287,14 +288,15 @@ replace_hexcodes(gchar * text)
     xmms_cfg_free(cfgfile);
   }
 
-  for (head = tail = text; *tail; head++, tail++) {
+  for (head = tail = text; *head; head++, tail++) {
     /* replace underscors with spaces if necessary */
     if (conv_underscore && *head == '_') {
       *tail = ' ';
       continue;
     }
     /* replace hex with character if necessary */
-    if (*head == '%' && sscanf(head + 1, "%2x", &c)) {
+    if (*head == '%' && isxdigit(head[1]) && isxdigit(head[2])) {
+      sscanf(head + 1, "%2x", &c);
       *tail = (char) c;
       head += 2;
       continue;

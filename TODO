@@ -22,3 +22,8 @@ Unordered TODOs
 * Only update lines which were changed: Add a flag to each line
 * Optimize line drawing to now always use full screen width.
 * Rewrite libxosd, so that one X11-thread can handle multiple displays.
+
+The Beep Media Plugin shares significant amounts of code with the xmms
+plugin (not surprisingly seeing that BMP is based on XMMS:). It'd be
+nice to merge the two codebases so that we don't need to apply patches
+to both. 

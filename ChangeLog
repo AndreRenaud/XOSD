@@ -1,3 +1,9 @@
+
+2.2.14:
+	Timeout Bigfix Patch (P Hahn)
+	Documentation Patch (P Hahn)
+	Beep Plugin Security Patch (P Hahn)
+
 2.2.13:
        buffer overflow patch (P Hahn)
 	timeout patch (P Hahn)
@@ -7,6 +13,8 @@
 	debug patch (P Hahn)
 	configure.ac patch (P Hahn)
 	beep media player plugin (G Washk)
+	configure patch so xosd compiles when beep media player not 
+	  installed (T Wright)
 
 2.2.12: 
 	Applied three patches from the debian maintainer. The first cleans

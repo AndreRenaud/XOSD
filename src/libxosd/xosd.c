@@ -49,11 +49,11 @@ _wait_until_update(xosd * osd, int generation)
 
 /* Serialize access to the X11 connection. {{{
  *
- * Background: xosd needs a thread which handles X11 exposures. XWindowEvent()
+ * Background: xosd needs a thread which handles X11 exposures. XNextEvent()
  * blocks and would deny any other thread - especially the thread which calls
  * the xosd API - the usage of the same X11 connection. XInitThreads() can't be
  * used, because xosd is a library which can be loaded dynamically way after
- * the loading application has done its firse X11 call, after which calling
+ * the loading application has done its first X11 call, after which calling
  * XInitThreads() is no longer possible. (Debian-Bug #252170)
  *
  * The exposure-thread gets the MUTEX and sleeps on a select([X11,pipe]). When
@@ -395,11 +395,13 @@ event_loop(void *osdv)
     if (osd->update & UPD_timer) {
       DEBUG(Dupdate, "UPD_timer");
       osd->update = UPD_none;
-      if (osd->timeout > 0)
+      if ((osd->generation & 1) && (osd->timeout > 0))
         gettimeofday(&osd->timeout_start, NULL);
       else
         timerclear(&osd->timeout_start);
-    } else if (timerisset(&osd->timeout_start)) {
+    }
+    /* Calculate timeout delta or hide display. */
+    if (timerisset(&osd->timeout_start)) {
       gettimeofday(&tv, NULL);
       tv.tv_sec -= osd->timeout;
       if (timercmp(&tv, &osd->timeout_start, <)) {
@@ -410,9 +412,10 @@ event_loop(void *osdv)
           tv.tv_sec -= 1;
         }
         tvp = &tv;
-      } else if (osd->generation & 1) {
+      } else {
         timerclear(&osd->timeout_start);
-        osd->update |= UPD_hide;
+        if (osd->generation & 1)
+          osd->update |= UPD_hide;
         continue;               /* Hide the window first and than restart the loop */
       }
     }
@@ -1261,7 +1264,10 @@ xosd_set_timeout(xosd * osd, int timeout)
   FUNCTION_START(Dfunction);
   if (osd == NULL)
     return -1;
+  _xosd_lock(osd);
   osd->timeout = timeout;
+  osd->update |= UPD_timer;
+  _xosd_unlock(osd);
   return 0;
 }
 

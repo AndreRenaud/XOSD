@@ -3,7 +3,7 @@ dnl Configure.ac for xosd
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(xosd, 2.2.13)
+AC_INIT(xosd, 2.2.14)
 AC_CONFIG_SRCDIR(src/testprog.c)
 AM_INIT_AUTOMAKE([no-define])
 
@@ -28,7 +28,7 @@ dnl       AGE = 0;
 dnl }
 LT_CURRENT=4
 LT_AGE=2
-LT_REVISION=13
+LT_REVISION=14
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
@@ -98,6 +98,17 @@ installed])
                      [$X_LIBS -lXext $X_EXTRA_LIBS])
 fi
 
+if pkg-config --exists bmp
+then
+	PKG_CHECK_MODULES(BMP, bmp)
+	BMP_GENERAL_PLUGIN_DIR=$(pkg-config --variable general_plugin_dir bmp)
+	AC_SUBST(BMP_GENERAL_PLUGIN_DIR)
+	no_bmp="yes"
+else
+	no_bmp="no"	
+	AC_MSG_WARN("beep media player not found")
+fi
+
 
 
 
@@ -144,7 +155,7 @@ AC_MSG_CHECKING([whether beep media plugin was requested])
 AC_MSG_RESULT($beep_media_player_plugin)
 
 AM_CONDITIONAL([BUILD_BEEP_MEDIA_PLUGIN],
-	       [test x"$beep_media_player_plugin" = "xyes"])
+	       [test x"$beep_media_player_plugin" = "xyes" -a x"$no_bmp" == "xyes"])
 
 		
 
