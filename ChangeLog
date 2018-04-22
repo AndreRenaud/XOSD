@@ -1,3 +1,8 @@
+
+2.2.3:
+        Alignment patch (Philipp Matthias Hahn)
+	xosd-config xlibs patch (Philipp Matthias Hahn)
+
 2.2.2:  Misc xosd patche (Philipp Matthias Hahn)
 	configure.ac libxinerama.pic or libxinerama patch (Philipp Matthias Hahn)
  

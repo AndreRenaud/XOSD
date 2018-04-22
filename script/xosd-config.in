@@ -2,7 +2,7 @@
 # Copied from ZThread and modified (Oron Peled)
 # Copied from libsigc++, and changed.
 
-af_libs="@LIBS@"
+af_libs="@LIBS@ @X_LIBS@"
 af_cflags="@CFLAGS@"
 prefix=@prefix@
 exec_prefix=@exec_prefix@

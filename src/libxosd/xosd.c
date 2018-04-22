@@ -1183,6 +1183,7 @@ int xosd_set_pos (xosd *osd, xosd_pos pos)
 
 	pthread_mutex_lock (&osd->mutex);
 	osd->pos = pos;
+	update_pos(osd);
 	force_redraw(osd, -1);
 	pthread_mutex_unlock (&osd->mutex);
 
@@ -1195,6 +1196,7 @@ int xosd_set_align (xosd *osd, xosd_align align)
 
 	pthread_mutex_lock (&osd->mutex);
 	osd->align = align;
+	update_pos(osd);
 	force_redraw (osd, -1);
 	pthread_mutex_unlock (&osd->mutex);
 
