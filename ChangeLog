@@ -1,5 +1,9 @@
+1.0.4:
+        Eungkyu Song's "xmms hanging in some non-C locale's patch" (Eungkyu Song)
+	xmms plugin uses xosd default font (Tim Wright)
+
 1.0.3:
-	Man page affect/effect spell patch (John McPherson)
+	Man page affect/effect spelling patch (John McPherson)
 	Many Autoconf and automake patches (Philipp Matthias Hahn)
 	better default font for osd_cat and xosd (Tim Wright with hints from 
 	  Philipp Matthias Hahn)

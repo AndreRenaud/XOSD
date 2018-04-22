@@ -157,7 +157,7 @@ static void expose_line(xosd *osd, int line)
       break;
 
     case LINE_text:
-      if (!l->length) break;
+      if (!l->text || !l->length) break;
 
       if (osd->align) {
         if (osd->align == XOSD_right) x = osd->width - l->width - x;
@@ -760,6 +760,8 @@ int xosd_set_colour (xosd *osd, char *colour)
 int xosd_set_font (xosd *osd, char *font)
 {
   int ret = 0;
+
+  if (font==NULL)  return -1;
 
   if (osd == NULL) return -1;
 

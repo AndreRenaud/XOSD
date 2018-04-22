@@ -12,7 +12,7 @@ chmod +x libtool-disable-static
 # version crud
 LT_CURRENT=1
 LT_AGE=0
-LT_REVISION=3
+LT_REVISION=4
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
 AC_SUBST(LT_REVISION)

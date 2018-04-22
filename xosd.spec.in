@@ -9,7 +9,7 @@ Copyright:	GPL
 Group:		System Environment/Libraries
 Packager:	Oron Peled <oron@actcom.co.il>
 Summary:	X On-Screen Display libray
-Source:		%name-1.0.0-pre2.tar.gz
+Source:		%name-@VERSION@.tar.gz
 
 # Oron Peled - Remove after adding to the distribution
 Source1:	xosd-config.in
@@ -41,7 +41,7 @@ Requires: xosd = %{version}, xmms
 A plugin for XMMS
 
 %prep
-%setup -n %{name}-1.0.0-pre2
+%setup -n %{name}-@VERSION@
 
 # Oron Peled - should be part of the main distribution
 cp $RPM_SOURCE_DIR/libxosd.m4 .
@@ -69,8 +69,8 @@ ldconfig
 
 %files
 %defattr(-, root, root)
-%{_libdir}/libxosd.so.0.0.0
-%{_libdir}/libxosd.so.0
+%{_libdir}/libxosd.so.@VERSION@
+%{_libdir}/libxosd.so.@LT_CURRENT@
 %{_libdir}/libxosd.so
 %{_bindir}/osd_cat
 %doc %{_mandir}/man1/osd_cat.1*
@@ -84,14 +84,11 @@ ldconfig
 %{_includedir}/xosd.h
 %{_bindir}/xosd-config
 %{aclocaldir}/libxosd.m4
+%doc %{_mandir}/man1/xosd-config.1*
 
 %files xmms
 %defattr(-, root, root)
-%{plugindir}/libxmms_osd.so.0.0.0
-%{plugindir}/libxmms_osd.so.0
 %{plugindir}/libxmms_osd.so
-%{plugindir}/libxmms_osd.la
-%{plugindir}/libxmms_osd.a
 
 %clean
 [ "$RPM_BUILD_ROOT" != "/" ] && [ -d $RPM_BUILD_ROOT ] && rm -rf $RPM_BUILD_ROOT
