@@ -143,9 +143,6 @@ draw_bar(xosd * osd, int line)
 
   DEBUG(Dvalue, "percent=%d, nbars=%d, on=%d", l->value, nbars, on);
 
-  /* adjust the y coordinate based on the line number */
-  p.y += line*osd->line_height;
-
   /* Outline */
   if (osd->outline_offset) {
     m.x = m.y = -osd->outline_offset;
@@ -209,9 +206,6 @@ draw_text(xosd * osd, int line)
   case XOSD_left:
     break;
   }
-
-  /* adjust the y coordinate based on the line number */
-  y += line*osd->line_height;
 
   if (osd->shadow_offset) {
     XSetForeground(osd->display, osd->gc, osd->shadow_pixel);
@@ -309,14 +303,14 @@ event_loop(void *osdv)
       DEBUG(Dupdate, "UPD_lines");
       for (line = 0; line < osd->number_lines; line++) {
         int y = osd->line_height * line;
-#if 0                           /* Turn on for debugging */
+#ifdef DEBUG_XSHAPE
         XSetForeground(osd->display, osd->gc, osd->outline_pixel);
         XFillRectangle(osd->display, osd->line_bitmap, osd->gc, 0,
-                       y, osd->screen_width, osd->line_height);
+                       0, osd->screen_width, osd->line_height);
 #endif
         if (osd->update & UPD_mask) {
           XFillRectangle(osd->display, osd->mask_bitmap, osd->mask_gc_back, 0,
-                         y, osd->screen_width, osd->line_height);
+                         0, osd->screen_width, osd->line_height);
         }
         switch (osd->lines[line].type) {
         case LINE_text:
@@ -328,16 +322,25 @@ event_loop(void *osdv)
         case LINE_blank:
           break;
         }
-#if 1                           /* Turn off for debugging */
+#ifndef DEBUG_XSHAPE
         /* More than colours was changed, update XShape. */
         if (osd->update & UPD_mask) {
           DEBUG(Dupdate, "UPD_mask");
-          XShapeCombineMask(osd->display, osd->window, ShapeBounding, 0, 0,
-                            osd->mask_bitmap, ShapeSet);
+          XShapeCombineMask(osd->display, osd->window, ShapeBounding, 0, y,
+                            osd->mask_bitmap, ShapeUnion);
         }
 #endif
-        XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc, 0, y,
+        XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc, 0, 0,
                   osd->screen_width, osd->line_height, 0, y);
+#ifndef DEBUG_XSHAPE
+        if (osd->update & UPD_mask) {
+          XCopyPlane(osd->display, osd->mask_bitmap, osd->mask_bitmap,
+                     osd->mask_gc_back, 0, 0, osd->screen_width,
+                     osd->line_height, 0, 0, (1 << 0));
+          XShapeCombineMask(osd->display, osd->window, ShapeBounding, 0, y,
+                            osd->mask_bitmap, ShapeSubtract);
+        }
+#endif
       }
     }
     /* H/V offset or vertical positon was changed. Horizontal alignment is
@@ -445,12 +448,8 @@ event_loop(void *osdv)
              do {
              osd->lines[ytop].width = -1;
              } while (ytop++ < ybot);
-             osd->update |= UPD_lines;
            */
-          XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc,
-                    report.xexpose.x, report.xexpose.y, report.xexpose.width,
-                    report.xexpose.height, report.xexpose.x,
-                    report.xexpose.y);
+          osd->update |= UPD_lines;
         }
         break;
       case NoExpose:
@@ -880,7 +879,7 @@ int
 xosd_display(xosd * osd, int line, xosd_command command, ...)
 {
   int ret = -1;
-  union xosd_line newline = { type: LINE_blank };
+union xosd_line newline = { type:LINE_blank };
   va_list a;
 
   FUNCTION_START(Dfunction);
@@ -941,12 +940,12 @@ xosd_display(xosd * osd, int line, xosd_command command, ...)
   _xosd_lock(osd);
   /* Free old entry */
   switch (osd->lines[line].type) {
-    case LINE_text:
-      free (osd->lines[line].text.string);
-    case LINE_blank:
-    case LINE_percentage:
-    case LINE_slider:
-      break;
+  case LINE_text:
+    free(osd->lines[line].text.string);
+  case LINE_blank:
+  case LINE_percentage:
+  case LINE_slider:
+    break;
   }
   osd->lines[line] = newline;
   osd->update |= UPD_content | UPD_timer | UPD_show;
@@ -954,7 +953,10 @@ xosd_display(xosd * osd, int line, xosd_command command, ...)
 
   /* Wait for update */
   pthread_mutex_lock(&osd->mutex_sync);
-  pthread_cond_wait(&osd->cond_sync, &osd->mutex_sync);
+  while (!osd->mapped) {
+    DEBUG(Dtrace, "waiting %d", osd->mapped);
+    pthread_cond_wait(&osd->cond_sync, &osd->mutex_sync);
+  }
   pthread_mutex_unlock(&osd->mutex_sync);
 
 error:
@@ -1276,7 +1278,10 @@ xosd_show(xosd * osd)
 
     /* Wait for update */
     pthread_mutex_lock(&osd->mutex_sync);
-    pthread_cond_wait(&osd->cond_sync, &osd->mutex_sync);
+    while (!osd->mapped) {
+      DEBUG(Dtrace, "waiting %d", osd->mapped);
+      pthread_cond_wait(&osd->cond_sync, &osd->mutex_sync);
+    }
     pthread_mutex_unlock(&osd->mutex_sync);
     return 0;
   }
