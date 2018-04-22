@@ -121,7 +121,7 @@ struct xosd
   unsigned long outline_pixel;  /* CACHE (outline_colour) */
   int bar_length;               /* CONF */
 
-  int mapped;                   /* DYN */
+  int generation;               /* DYN count of map/unmap */
   int done;                     /* DYN */
   enum {
     UPD_none = 0,       /* Nothing changed */

@@ -12,4 +12,4 @@ include_HEADERS = xosd.h
 
 AM_CFLAGS = ${GTK_CFLAGS}
 
-SUBDIRS=libxosd xmms_plugin
+SUBDIRS=libxosd xmms_plugin bmp_plugin

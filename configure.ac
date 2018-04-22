@@ -3,7 +3,7 @@ dnl Configure.ac for xosd
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(xosd, 2.2.12)
+AC_INIT(xosd, 2.2.13)
 AC_CONFIG_SRCDIR(src/testprog.c)
 AM_INIT_AUTOMAKE([no-define])
 
@@ -28,7 +28,7 @@ dnl       AGE = 0;
 dnl }
 LT_CURRENT=4
 LT_AGE=2
-LT_REVISION=12
+LT_REVISION=13
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
@@ -41,14 +41,14 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
-AC_PATH_XTRA
+AC_PATH_XTRA([X11],[X11/Xlib.h],[XrmInitialize()])
 # We need two libtools, one that builds both shared and static, and
 # one that builds only static.  This is because the resulting libtool
 # does not allow us to choose which to build at runtime.
 sed -e 's/^build_old_libs=yes/build_old_libs=no/' libtool > libtool-disable-static
 chmod +x libtool-disable-static
 
-LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
+LIBS="$LIBS $X_LIBS $X_EXTRA_LIBS"
 CFLAGS="$CFLAGS $X_CFLAGS -Wall"
 M4DATADIR="$datadir/aclocal"
 AC_SUBST(M4DATADIR)
@@ -60,7 +60,6 @@ AC_CHECK_LIB(X11, XInitThreads,,
 	     AC_MSG_ERROR([*** X11 not threadsafe ***]))
 AC_CHECK_LIB(Xext, XShapeQueryExtension,,
 	     AC_MSG_ERROR([*** X11 Shape extension not found ***]))
-AC_CHECK_LIB(Xt, main)
 AC_CHECK_LIB(pthread, pthread_create,,
 	     AC_MSG_ERROR([*** POSIX thread support not found ***]))
 
@@ -95,8 +94,8 @@ then
                                     AC_DEFINE(HAVE_XINERAMA,1,[Define this if you have libXinerama
 installed])
                                     ac_have_xinerama="yes"],,
-                                    [$X_LIBS $X_PRE_LIBS -lXext $X_EXTRA_LIBS]),
-                     [$X_LIBS $X_PRE_LIBS -lXext $X_EXTRA_LIBS])
+                                    [$X_LIBS -lXext $X_EXTRA_LIBS]),
+                     [$X_LIBS -lXext $X_EXTRA_LIBS])
 fi
 
 
@@ -134,6 +133,22 @@ AC_MSG_RESULT($enable_new_plugin)
 AM_CONDITIONAL([BUILD_NEW_PLUGIN],
 	       [test x"$enable_new_plugin" = "xyes" -a x"$no_xmms" != "xyes" -a x"$no_gdk_pixbuf" != "xyes"])
 
+
+dnl Check for Beep Media player
+AC_ARG_ENABLE([beep_media_player_plugin],
+		AC_HELP_STRING([--enable-beep_media_player_plugin],
+			     [Enable beep media plugin (enabled by default)]),
+              [beep_media_player_plugin="$enableval"],
+              [beep_media_player_plugin="yes"])
+AC_MSG_CHECKING([whether beep media plugin was requested])
+AC_MSG_RESULT($beep_media_player_plugin)
+
+AM_CONDITIONAL([BUILD_BEEP_MEDIA_PLUGIN],
+	       [test x"$beep_media_player_plugin" = "xyes"])
+
+		
+
+
 dnl OLD plugin
 AC_ARG_ENABLE([old-plugin],
 	      AC_HELP_STRING([--enable-old-plugin],
@@ -144,6 +159,7 @@ AC_MSG_CHECKING([whether old xmms plugin was requested])
 AC_MSG_RESULT($enable_old_plugin)
 AM_CONDITIONAL([BUILD_OLD_PLUGIN],
 	       [test x"$enable_old_plugin" = "xyes" -a x"$no_xmms" != "xyes"])
+
 
 dnl Define XOSD_VERSION
 AC_DEFINE_UNQUOTED(XOSD_VERSION, "${VERSION}")
@@ -156,6 +172,7 @@ Makefile
 src/Makefile
 src/libxosd/Makefile
 src/xmms_plugin/Makefile
+src/bmp_plugin/Makefile
 macros/Makefile
 man/Makefile
 pixmaps/Makefile

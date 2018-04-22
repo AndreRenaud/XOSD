@@ -1,3 +1,13 @@
+2.2.13:
+       buffer overflow patch (P Hahn)
+	timeout patch (P Hahn)
+	x window select patch (P Hahn)
+	x event patch (P Hahn)
+	synchronous update patch (P Hahn)
+	debug patch (P Hahn)
+	configure.ac patch (P Hahn)
+	beep media player plugin (G Washk)
+
 2.2.12: 
 	Applied three patches from the debian maintainer. The first cleans
 	up file handles, the second fixes a man page, the third fixes a

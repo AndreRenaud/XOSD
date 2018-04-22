@@ -33,6 +33,20 @@ const char *osd_default_colour = "green";
 /** Global error string. */
 char *xosd_error;
 
+/* Wait until display is in next state. {{{ */
+static void
+_wait_until_update(xosd * osd, int generation)
+{
+  pthread_mutex_lock(&osd->mutex_sync);
+  while (osd->generation == generation) {
+    DEBUG(Dtrace, "waiting %d %d", generation, osd->generation);
+    pthread_cond_wait(&osd->cond_sync, &osd->mutex_sync);
+  }
+  pthread_mutex_unlock(&osd->mutex_sync);
+}
+
+/* }}} */
+
 /* Serialize access to the X11 connection. {{{
  *
  * Background: xosd needs a thread which handles X11 exposures. XWindowEvent()
@@ -67,10 +81,13 @@ static /*inline */ void
 _xosd_unlock(xosd * osd)
 {
   char c;
+  int generation = osd->generation, update = osd->update;
   FUNCTION_START(Dlocking);
   read(osd->pipefd[0], &c, sizeof(c));
   pthread_cond_signal(&osd->cond_wait);
   pthread_mutex_unlock(&osd->mutex);
+  if (update & UPD_show)
+    _wait_until_update(osd, generation & ~1); /* no wait when already shown. */
   FUNCTION_END(Dlocking);
 }
 
@@ -266,9 +283,9 @@ event_loop(void *osdv)
     /* Hide display requested. */
     if (osd->update & UPD_hide) {
       DEBUG(Dupdate, "UPD_hide");
-      if (osd->mapped) {
+      if (osd->generation & 1) {
         XUnmapWindow(osd->display, osd->window);
-        osd->mapped = 0;
+        osd->generation++;
       }
     }
     /* The font, outline or shadow was changed. Recalculate line height,
@@ -357,13 +374,13 @@ event_loop(void *osdv)
     /* Show display requested. */
     if (osd->update & UPD_show) {
       DEBUG(Dupdate, "UPD_show");
-      if (!osd->mapped) {
-        osd->mapped = 1;
+      if (~osd->generation & 1) {
+        osd->generation++;
         XMapRaised(osd->display, osd->window);
       }
     }
     /* Copy content, if window was changed or exposed. */
-    if (osd->mapped
+    if ((osd->generation & 1)
         && osd->update & (UPD_size | UPD_pos | UPD_lines | UPD_show)) {
       DEBUG(Dupdate, "UPD_copy");
       XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc, 0, 0,
@@ -380,6 +397,8 @@ event_loop(void *osdv)
       osd->update = UPD_none;
       if (osd->timeout > 0)
         gettimeofday(&osd->timeout_start, NULL);
+      else
+        timerclear(&osd->timeout_start);
     } else if (timerisset(&osd->timeout_start)) {
       gettimeofday(&tv, NULL);
       tv.tv_sec -= osd->timeout;
@@ -391,7 +410,7 @@ event_loop(void *osdv)
           tv.tv_sec -= 1;
         }
         tvp = &tv;
-      } else if (osd->mapped) {
+      } else if (osd->generation & 1) {
         timerclear(&osd->timeout_start);
         osd->update |= UPD_hide;
         continue;               /* Hide the window first and than restart the loop */
@@ -425,30 +444,46 @@ event_loop(void *osdv)
       continue;
     } else if (FD_ISSET(xfd, &readfds)) {
       XEvent report;
-      XWindowEvent(osd->display, osd->window, ExposureMask, &report);
+      /* There is a event, but it might not be an Exposure-event, so don't use
+       * XWindowEvent(), since that might block. */
+      XNextEvent(osd->display, &report);
       /* ignore sent by server/manual send flag */
       switch (report.type & 0x7f) {
       case Expose:
-        /* http://x.holovko.ru/Xlib/chap10.html#10.9.1 */
-        DEBUG(Dvalue, "expose %d: x=%d y=%d w=%d h=%d", report.xexpose.count,
-              report.xexpose.x, report.xexpose.y, report.xexpose.width,
-              report.xexpose.height);
+        {
+          XExposeEvent *XE = &report.xexpose;
+          /* http://x.holovko.ru/Xlib/chap10.html#10.9.1 */
+          DEBUG(Dvalue, "expose %d: x=%d y=%d w=%d h=%d", XE->count,
+                XE->x, XE->y, XE->width, XE->height);
 #if 0
-        if (report.xexpose.count == 0) {
-          int ytop, ybot;
-          ytop = report.xexpose.y / osd->line_height;
-          ybot =
-            (report.xexpose.y + report.xexpose.height) / osd->line_height;
-          do {
-            osd->lines[ytop].width = -1;
-          } while (ytop++ < ybot);
-        }
+          if (report.xexpose.count == 0) {
+            int ytop, ybot;
+            ytop = report.xexpose.y / osd->line_height;
+            ybot =
+              (report.xexpose.y + report.xexpose.height) / osd->line_height;
+            do {
+              osd->lines[ytop].width = -1;
+            } while (ytop++ < ybot);
+          }
 #endif
-        XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc,
-                  report.xexpose.x, report.xexpose.y, report.xexpose.width,
-                  report.xexpose.height, report.xexpose.x, report.xexpose.y);
-        break;
+          XCopyArea(osd->display, osd->line_bitmap, osd->window, osd->gc,
+                    report.xexpose.x, report.xexpose.y, report.xexpose.width,
+                    report.xexpose.height, report.xexpose.x, report.xexpose.y);
+          break;
+        }
+      case GraphicsExpose:
+        {
+          XGraphicsExposeEvent *XE = &report.xgraphicsexpose;
+          DEBUG(Dvalue, "gfxexpose %d: x=%d y=%d w=%d h=%d code=%d",
+                XE->count, XE->x, XE->y, XE->width, XE->height, XE->major_code);
+          break;
+        }
       case NoExpose:
+        {
+          XNoExposeEvent *XE = &report.xnoexpose;
+          DEBUG(Dvalue, "noexpose: code=%d", XE->major_code);
+          break;
+        }
       default:
         DEBUG(Dvalue, "XEvent=%d", report.type);
         break;
@@ -462,20 +497,6 @@ event_loop(void *osdv)
   pthread_mutex_unlock(&osd->mutex);
 
   return NULL;
-}
-
-/* }}} */
-
-/* Wait until display is update and in specific state. {{{ */
-static void
-_wait_until_state(xosd * osd, int state)
-{
-  pthread_mutex_lock(&osd->mutex_sync);
-  while (osd->mapped != state) {
-    DEBUG(Dtrace, "waiting %d", osd->mapped);
-    pthread_cond_wait(&osd->cond_sync, &osd->mutex_sync);
-  }
-  pthread_mutex_unlock(&osd->mutex_sync);
 }
 
 /* }}} */
@@ -628,6 +649,7 @@ xosd_create(int number_lines)
   int event_basep, error_basep, i;
   char *display;
   XSetWindowAttributes setwinattr;
+  XGCValues xgcv = { .graphics_exposures = False };
 #ifdef HAVE_XINERAMA
   int screens;
   int dummy_a, dummy_b;
@@ -675,7 +697,7 @@ xosd_create(int number_lines)
     memset(&osd->lines[i], 0, sizeof(union xosd_line));
 
   DEBUG(Dtrace, "misc osd variable initialization");
-  osd->mapped = 0;
+  osd->generation = 0;
   osd->done = 0;
   osd->pos = XOSD_top;
   osd->hoffset = 0;
@@ -755,9 +777,9 @@ xosd_create(int number_lines)
     XCreatePixmap(osd->display, osd->window, osd->screen_width,
                   osd->line_height, osd->depth);
 
-  osd->gc = XCreateGC(osd->display, osd->window, 0, NULL);
-  osd->mask_gc = XCreateGC(osd->display, osd->mask_bitmap, 0, NULL);
-  osd->mask_gc_back = XCreateGC(osd->display, osd->mask_bitmap, 0, NULL);
+  osd->gc = XCreateGC(osd->display, osd->window, GCGraphicsExposures, &xgcv);
+  osd->mask_gc = XCreateGC(osd->display, osd->mask_bitmap, GCGraphicsExposures, &xgcv);
+  osd->mask_gc_back = XCreateGC(osd->display, osd->mask_bitmap, GCGraphicsExposures, &xgcv);
 
   XSetBackground(osd->display, osd->gc,
                  WhitePixel(osd->display, osd->screen));
@@ -962,7 +984,6 @@ union xosd_line newline = { type:LINE_blank };
   osd->lines[line] = newline;
   osd->update |= UPD_content | UPD_timer | UPD_show;
   _xosd_unlock(osd);
-  _wait_until_state(osd, 1);
 
 error:
   va_end(a);
@@ -978,7 +999,7 @@ xosd_is_onscreen(xosd * osd)
   FUNCTION_START(Dfunction);
   if (osd == NULL)
     return -1;
-  return osd->mapped;
+  return osd->generation & 1;
 }
 
 /* }}} */
@@ -987,11 +1008,13 @@ xosd_is_onscreen(xosd * osd)
 int
 xosd_wait_until_no_display(xosd * osd)
 {
+  int generation;
   FUNCTION_START(Dfunction);
   if (osd == NULL)
     return -1;
 
-  _wait_until_state(osd, 0);
+  if ((generation = osd->generation) & 1)
+    _wait_until_update(osd, generation);
 
   FUNCTION_END(Dfunction);
   return 0;
@@ -1252,9 +1275,10 @@ xosd_hide(xosd * osd)
   if (osd == NULL)
     return -1;
 
-  if (osd->mapped) {
+  if (osd->generation & 1) {
     _xosd_lock(osd);
-    osd->update |= (osd->update & ~UPD_show) | UPD_hide;
+    osd->update &= ~UPD_show;
+    osd->update |= UPD_hide;
     _xosd_unlock(osd);
     return 0;
   }
@@ -1271,12 +1295,11 @@ xosd_show(xosd * osd)
   if (osd == NULL)
     return -1;
 
-  if (!osd->mapped) {
+  if (~osd->generation & 1) {
     _xosd_lock(osd);
-    osd->update |= (osd->update & ~UPD_hide) | UPD_show | UPD_timer;
+    osd->update &= ~UPD_hide;
+    osd->update |= UPD_show | UPD_timer;
     _xosd_unlock(osd);
-
-    _wait_until_state(osd, 1);
     return 0;
   }
   return -1;
