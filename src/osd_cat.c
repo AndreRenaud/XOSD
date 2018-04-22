@@ -10,10 +10,11 @@
 static struct option long_options[] = {
   {"font",   1, NULL, 'f'},
   {"color",  1, NULL, 'c'},
+  {"colour",  1, NULL, 'c'},
+  {"indent",  1, NULL, 'i'},
   {"delay",  1, NULL, 'd'},
   {"offset", 1, NULL, 'o'},
-  {"top",    0, NULL, 't'},
-  {"bottom", 0, NULL, 'b'},
+  {"pos",    0, NULL, 'p'},
   {"align",  1, NULL, 'A'},
   {"shadow", 1, NULL, 's'},
   {"age",    1, NULL, 'a'},
@@ -30,11 +31,12 @@ int main (int argc, char *argv[])
   char *newline;
 
   char *font = (char*) osd_default_font;
-  char *color = "red";
+  char *colour = "red";
   int delay = 5;
   int forcewait=0;
   xosd_pos pos = XOSD_top;
-  int offset = 0;
+  int voffset = 0;
+  int hoffset = 0;
   int shadow = 0;
   int scroll_age = 0;
   struct timeval old_age,new_age;
@@ -45,7 +47,7 @@ int main (int argc, char *argv[])
   while (1)
     {
       int option_index = 0;
-      int c = getopt_long (argc, argv, "l:A:a:f:c:d:o:s:tbhw", long_options, &option_index);
+      int c = getopt_long (argc, argv, "l:A:a:f:c:d:o:i:s:p:hw", long_options, &option_index);
       if (c == -1) break;
       switch (c)
 	{
@@ -69,17 +71,32 @@ int main (int argc, char *argv[])
 	    return EXIT_FAILURE;
 	  }
 	  break;
+	case 'p':
+	  if (strcasecmp(optarg,"top")==0) {
+	    pos=XOSD_top;
+	  } else if (strcasecmp(optarg,"middle")==0) {
+	    pos=XOSD_middle;
+	  } else if (strcasecmp(optarg,"bottom")==0) {
+	    pos=XOSD_bottom;
+	  } else {
+	    fprintf (stderr, "Unknown alignment: %s\n", optarg);
+	    return EXIT_FAILURE;
+	  }
+	  break;
 	case 'f':
 	  font = optarg;
 	  break;
 	case 'c':
-	  color = optarg;
+	  colour = optarg;
 	  break;
 	case 'd':
 	  delay = atoi(optarg);
 	  break;
 	case 'o':
-	  offset = atoi(optarg);
+	  voffset = atoi(optarg);
+	  break;
+	case 'i':
+	  hoffset = atoi(optarg);
 	  break;
 	case 's':
 	  shadow=atoi(optarg);
@@ -87,26 +104,21 @@ int main (int argc, char *argv[])
 	case 'l':
 	  lines=atoi(optarg);
 	  break;
-	case 't':
-	  pos = XOSD_top;
-	  break;
-	case 'b':
-	  pos = XOSD_bottom;
-	  break;
 	case '?':
 	case 'h':
 	  fprintf (stderr, "Usage: %s [OPTION] [FILE]...\n", argv[0]);
 	  fprintf (stderr, "Version: %s \n", XOSD_VERSION);
 	  fprintf (stderr, "Display FILE, or standard input, on top of display.\n\n");
 	  fprintf (stderr, "  -a, --age           Time in seconds before old scroll lines are discarded\n");
-	  fprintf (stderr, "  -t, --top           Display at top of screen\n");
-	  fprintf (stderr, "  -b, --bottom        Display at bottom of screen\n");
+	  fprintf (stderr, "  -p, --pos=(top|middle|bottom)\n");
+	  fprintf (stderr, "                      Display at top/middle/bottom of screen. Top is default\n");
 	  fprintf (stderr, "  -A, --align=(left|right|center)\n");
-	  fprintf (stderr, "                      Display at left/right/center of screen\n");
+	  fprintf (stderr, "                      Display at left/right/center of screen.Left is default\n");
 	  fprintf (stderr, "  -f, --font=FONT     Use font (default: %s)\n", osd_default_font);
-	  fprintf (stderr, "  -c, --color=COLOR   Use color\n");
+	  fprintf (stderr, "  -c, --colour=COLOUR Use colour\n");
 	  fprintf (stderr, "  -d, --delay=TIME    Show for specified time\n");
-	  fprintf (stderr, "  -o, --offset=OFFSET Display Offset\n");
+	  fprintf (stderr, "  -o, --offset=OFFSET Vertical Offset\n");
+	  fprintf (stderr, "  -i, --indent=OFFSET Horizontal Offset\n");
 	  fprintf (stderr, "  -h, --help          Show this help\n");
 	  fprintf (stderr, "  -s, --shadow=SHADOW Offset of shadow, default is 0 which is no shadow\n");
 	  fprintf (stderr, "  -w, --wait          Delay display even when new lines are ready\n");
@@ -127,12 +139,23 @@ int main (int argc, char *argv[])
   else
     fp = stdin;
 
-  osd = xosd_init (font, color, delay, pos, offset, shadow, lines);
+  osd = xosd_create (lines);
   if (!osd)
     {
       fprintf (stderr, "Error initializing osd: %s\n", xosd_error);
       return EXIT_FAILURE;
     }
+
+  xosd_set_font(osd, font);
+  xosd_set_colour(osd, colour);
+  xosd_set_timeout(osd, delay);
+  xosd_set_pos(osd, pos);
+  xosd_set_vertical_offset(osd, voffset);
+  xosd_set_horizontal_offset(osd, hoffset);
+  xosd_set_shadow_offset(osd, shadow);
+  xosd_set_align(osd, align);
+
+
   xosd_set_align (osd, align);
   /* Not really needed, but at least we aren't throwing around an unknown value */
   old_age.tv_sec=0;
@@ -186,7 +209,7 @@ int main (int argc, char *argv[])
     xosd_wait_until_no_display(osd);
   }
 
-  xosd_uninit (osd);
+  xosd_destroy (osd);
 
   return EXIT_SUCCESS;
 }

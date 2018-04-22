@@ -1,3 +1,15 @@
+2.0.0: 
+        XMMS plugin configure patch (Michael JasonSmith)
+	new xosd_init function added. The other one will be
+	  removed eventually (Tim Wright)
+	xosd horizontal indent added (Etan Reisner with modifications by Tim Wright)
+	slider centering bugfix patch (Torsten Sievers because Tim Wright's thoughts 
+	  were wrong:)
+	middle alignment patch (Jake Roersma)
+	-t and -b arguments in osd_cat have been replaced with -p=(top|middle|bottom)
+	  (Tim Wright)
+	Man pages patches (Tim Wright --- but they need more work)
+	
 1.1.1:
         X concurrency control patch (Tim Wright)
         misc bug fixes (Philipp Matthias Hahn)

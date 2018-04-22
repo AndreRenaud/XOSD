@@ -1,0 +1,41 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.TH xosd_create 3xosd "2002-06-25" "X OSD Library"
+.SH NAME
+xosd_create \- Create a new xosd window
+.SH SYNOPSIS
+.B #include <xosd.h>
+.sp
+.BI "xosd* xosd_create(int " number_lines );
+.fi
+.SH DESCRIPTION
+.B xosd_create
+creates a new
+.I xosd
+window that can be used to display textual or numerical data on
+a X11 display in a unmanaged, shaped window that appears to be
+transparent. 
+It provides a similar effect to the on-screen display of many
+televisions and video recorders.
+
+Initially the window shows no data;
+when data is displayed (using
+.BI xosd_display (3xosd) )
+
+Users can change the font, colour and a whole lot of other things. See the
+.BI xosd (3xosd) 
+man page for more details
+
+.SH ARGUMENTS
+.IP \fInumber_lines\fP 1i
+The maximum number of lines to display on the screen.
+.SH "RETURN VALUE"
+On success, a pointer to a
+.I xosd
+structure will be returned, otherwise
+.I NULL
+will be returned.
+.SH "SEE ALSO"
+.BR xosd_display (3xosd),
+.BR xfontsel (1),
+.BR gfontsel (1),
+.BR XParseColor (3x)

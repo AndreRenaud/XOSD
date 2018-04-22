@@ -11,26 +11,33 @@ osd_cat - X on-screen file displayer
 .PP
 Display FILE, or standard input, on X screen.
 .TP
-\fB\-t\fR, \fB\-\-top\fR
-Display at top of screen
+\fB\-p\fR, \fB\-\-pos\fR=\fIPOS\fR
+This option tells osd_cat where to display the text. TPOS can be top, middle, or bottom. The 
+default is \fItop\fR.
 .TP
-\fB\-b\fR, \fB\-\-bottom\fR
-Display at bottom of screen
+\fB\-o\fR, \fB\-\-offset\fR=\fIOFFSET\fR
+This option specifies the offset from the top or bottom of screen the text is 
+displayed. The default is \fI0
+.TP
+\fB\-A\fR, \fB\-\-align\fR=\fIALIGN\fR
+This option tells osd_cat where to display the text. TPOS can be left, right or center. The 
+default is \fIcenter\fR.
+.TP
+\fB\-i\fR, \fB\-\-indent\fR=\fIOFFSET\fR
+This option specifies the indent from the left of screen the text is displayed. The default is \fI0
 .TP
 \fB\-f\fR, \fB\-\-font\fR=\fIFONT\fR
 This option specifies the font to be used for displaying the text. The default is \fIfixed\fR.
 .TP
 \fB\-c\fR, \fB\-\-color\fR=\fICOLOR\fR
-This option specifies the color to be used for displaying the text. The default is \fIred\fR.
+This option specifies the color to be used for displaying the text. The default is \fIred\fR. 
 .TP
 \fB\-d\fR, \fB\-\-delay\fR=\fITIME\fR
 This option specifies the number of seconds the text is displayed. The default is \fI5\fR seconds.
 .TP
 \fB\-l\fR, \fB\-\-lines\fR=\fILINES\fR
 This option specifies the number of lines to scroll the display over. The default is \fI5\fR.
-.TP
-\fB\-o\fR, \fB\-\-offset\fR=\fIOFFSET\fR
-This option specifies the offset from the top or bottom of screen the text is displayed. The default is \fI0\fR.
+\fR.
 .TP
 \fB\-s\fR, \fB\-\-shadow\fR=\fISHADOW\fR
 This option specifies the offset of the text shadow. The default is \fI0\fR, which means no text shadow is created.
@@ -47,7 +54,7 @@ be put on screen, this option will cause osd_cat to wait until the
 display is clear. An alternative to scrolling.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
-display this help and exit
+display help (which is often more up to date) and exit
 .PP
 With no FILE, or when FILE is -, read standard input.
 .SH AUTHOR
