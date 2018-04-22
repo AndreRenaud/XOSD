@@ -6,6 +6,11 @@
 extern "C" {
 #endif
 
+#if ( __GNUC__ == 3 && __GNUC_MINOR__ > 0 ) || __GNUC__ > 3
+#define __deprecated	__attribute__((deprecated))
+#else
+#define __deprecated
+#endif
 
 /* Error message when a routine returns failure */
 extern char *xosd_error;
@@ -57,10 +62,10 @@ typedef enum
  *     A new xosd structure.
  */
 
-xosd *xosd_create(int number_lines);
+xosd * __deprecated xosd_create(int number_lines);
 
 /* deprecated */
-xosd *xosd_init (char *font, char *colour, int timeout,
+xosd *xosd_init (const char *font, const char *colour, int timeout,
 		 xosd_pos pos, int offset, int shadow_offset,
 		 int number_lines);
 
@@ -76,7 +81,7 @@ xosd *xosd_init (char *font, char *colour, int timeout,
 int xosd_destroy (xosd *osd);
 
 /* deprecated */
-int xosd_uninit (xosd *osd);
+int __deprecated xosd_uninit (xosd *osd);
 
 /* xosd_set_bar_length  -- Set length of percentage and slider bar
  *

@@ -107,12 +107,15 @@ option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
 Optional Features
 =================
 
-   Some packages pay attention to `--enable-FEATURE' options to
-`configure', where FEATURE indicates an optional part of the package.
-They may also pay attention to `--with-PACKAGE' options, where PACKAGE
-is something like `gnu-as' or `x' (for the X Window System).  The
-`README' should mention any `--enable-' and `--with-' options that the
-package recognizes.
+Xosd comes with two xmms plugins. The new one uses gdk-pixbuf to do
+stuff, and the old one doesn't. We include both because the gdk-pixbuf
+interface has changed a bit and people with older versions might have
+trouble using the library.
+
+By default we only compile the new version. To compile the old version
+use the "--enable-old-plugin==yes" flag to configure. To not build the
+new version of the plugin, use the "--enable-new-plugin==no" flag to
+configure.
 
    For packages that use the X Window System, `configure' can usually
 find the X include and library files automatically, but if it doesn't,

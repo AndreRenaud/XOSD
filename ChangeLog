@@ -1,3 +1,23 @@
+2.1.1: Philipp Matthias Hahn (the Debian Maintainer) sent in a huge patch:
+ 	Fix library version number schema
+ 	Fail on missing fontset instead of crashing
+ 	Call XInitThreads()
+ 	Use proper signaling for timeout
+ 	Use blocking X11 calls to fix xmms with realtime scheduling.
+ 	Add lots of comments
+ 	Move locking and checking osd!=NULL to xosd_* wrappers
+ 	Start using assert()
+ 	More const parameters
+ 	Use switch() instead of nested if()
+ 	Base deprecated osd_create() on newer osd_init()
+ 	Free pthread_cond on failed init
+ 	Fix race in xosd_wait_until_no_display()
+ 	Remove double xosd_set_align()
+	
+      new options to configure: --enable-old-plugin=yes and
+        --disable-new-plugin=yes so users can choose which xmms plugin to
+        build. (Götz Waschk)
+
 2.1.0:
         New xmms plugin! well, actually the plugin from 2.0.0 has been 
 	included as an old plugin. Some people were having trouble with
@@ -71,7 +91,7 @@
 	Code Clean (Philipp Matthias Hahn)
 	Package Maintainers (that I know about):
 		Debian Package Maintainer is Philipp Matthias Hahn.
-		Mandrake Package Maintainer is Goetz Waschk.
+		Mandrake Package Maintainer is Götz Waschk.
 	Miscellaneous (and many) thanks to the Package Maintainers (Tim Wright)
 	Put the xmms plugin and libxosd libraries in subdirectories of src/.
 	  this was done to emable people to build libxosd without building the xmms
@@ -94,7 +114,7 @@
 	  (Tim Wright)
 	Finally got libtool and autoconf and automake all going
 	  (Tim Wright with lots of help from Martijn van de Streek and 
-	  Goetz Waschk --- it's easy once ya know how:)
+	  Götz Waschk --- it's easy once ya know how:)
 	Fixed the RedHat Packaging stuff (Oron Peled)
 	
 1.0.0pre3:
@@ -114,7 +134,7 @@
 1.0.0-pre2:
 	Applied xosd.h comment and compile-error patch 
 	         (Michael JasonSmith)
-	Applied xmms_osd automake linking patch (Goetz Waschk)
+	Applied xmms_osd automake linking patch (Götz Waschk)
 	Needed Andre's help to get the automake linking patch
 	         working (Tim Wright and Andre Renaud)
 	Applied xmms_osd "don't show volume and balance" patch 

@@ -2,12 +2,12 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/testprog.c)
 
 # version crud for libraries
-LT_CURRENT=2
+LT_CURRENT=3
 LT_AGE=1
-LT_REVISION=4
+LT_REVISION=1
 
 # version for tar file
-VERSION=2.1.0
+VERSION=2.1.1
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
@@ -67,7 +67,14 @@ AC_ARG_WITH(plugindir,
 
 dnl Plugin selection starts
 SELECTED_PLUGINS=
-
+NEW_PLUGIN="yes"
+AC_ARG_ENABLE(new-plugin, 
+  [  --disable-new-plugin          Disable new xmms plugin (enabled by default)],
+  [ NEW_PLUGIN="$enableval" ])
+AC_MSG_CHECKING([whether new xmms plugin was requested])
+AC_MSG_RESULT($NEW_PLUGIN)
+	
+if test "x$NEW_PLUGIN" = "xyes"; then
 dnl --=mjs=-- Check for gdk-pixmap libs.  There is probably a better
 dnl way to do this, but I don't know it.
 AC_PATH_PROG(gdk_pixbuf_config_script, gdk-pixbuf-config, "none")
@@ -77,7 +84,7 @@ AC_PATH_PROG(xmms_config_script, xmms-config, "none")
 
 if test "x$xmms_config_script" = "xnone" ; then
      echo "*** xmms-config script not found. xmms plugin will not be built"
-elif test "x$gdk_pixbuf_script" = "xnone" ; then
+elif test "x$gdk_pixbuf_config_script" = "xnone" ; then
      echo "*** gdk-pixbuf-config script not found. xmms plugin will not be built"
 else
 XMMS_CFLAGS=`$xmms_config_script --cflags`
@@ -97,7 +104,15 @@ AC_SUBST(XMMS_PLUGIN_DIR)
 
 	SELECTED_PLUGINS="$SELECTED_PLUGINS xmms_plugin"
 fi
+fi
 
+AC_ARG_ENABLE(old-plugin, 
+  [  --enable-old-plugin           Enable old xmms plugin (disabled by default)],
+  [ OLD_PLUGIN="$enableval" ],
+  [ OLD_PLUGIN="no" ])
+AC_MSG_CHECKING([whether old xmms plugin was requested])
+AC_MSG_RESULT($OLD_PLUGIN)
+if test "x$OLD_PLUGIN" = "xyes"; then
 if test "x$xmms_config_script" = "xnone" ; then
 XMMS_CFLAGS=`$xmms_config_script --cflags`
 XMMS_LIBS=`$xmms_config_script --libs`
@@ -106,10 +121,6 @@ if test "x$XMMS_PLUGIN_DIR" = "x" ; then
    XMMS_PLUGIN_DIR=`$xmms_config_script --general-plugin-dir`
 fi
 AC_MSG_RESULT($XMMS_PLUGIN_DIR)
-GDK_PIXBUF_CFLAGS=`$gdk_pixbuf_config_script --cflags`
-GDK_PIXBUF_LIBS=`$gdk_pixbuf_config_script --libs`
-AC_SUBST(GDK_PIXBUF_CFLAGS)
-AC_SUBST(GDK_PIXBUF_LIBS)
 AC_SUBST(XMMS_CFLAGS)
 AC_SUBST(XMMS_LIBS)
 AC_SUBST(XMMS_PLUGIN_DIR)
@@ -117,6 +128,7 @@ AC_SUBST(XMMS_PLUGIN_DIR)
      echo "*** xmms-config script not found. Old xmms plugin will not be built"
 else
 	SELECTED_PLUGINS="$SELECTED_PLUGINS xmms_plugin_oldplugin"
+fi
 fi
 
 dnl Plugin selection ends

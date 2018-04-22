@@ -103,7 +103,7 @@ int main (int argc, char *argv[])
      printerror();
    }
 
-   if (0 != xosd_uninit (osd)) {
+   if (0 != xosd_destroy (osd)) {
      printerror();
    }
 
