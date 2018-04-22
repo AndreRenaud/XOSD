@@ -1,0 +1,44 @@
+.\" Emacs, -*- nroff -*- please
+.TH XOSD 1xosd "Januar 2001" "X OSD cat"
+.SH NAME
+osd_cat - X on-screen file displayer
+.SH SYNOPSIS
+.B osd_cat
+[\fIOPTION\fR] [\fIFILE\fR]...
+.SH DESCRIPTION
+.PP
+.\" Add any additional description here
+.PP
+Display FILE, or standard input, on X screen.
+.TP
+\fB\-t\fR, \fB\-\-top\fR
+Display at top of screen
+.TP
+\fB\-b\fR, \fB\-\-bottom\fR
+Display at bottom of screen
+.TP
+\fB\-f\fR, \fB\-\-font\fR=\fIFONT\fR
+This option specifies the font to be used for displaying the text. The default is \fIfixed\fR.
+.TP
+\fB\-c\fR, \fB\-\-color\fR=\fICOLOR\fR
+This option specifies the color to be used for displaying the text. The default is \fIred\fR.
+.TP
+\fB\-d\fR, \fB\-\-delay\fR=\fITIME\fR
+This option specifies the number of seconds the text is displayed. The default is \fI5\fR seconds.
+.TP
+\fB\-o\fR, \fB\-\-offset\fR=\fIOFFSET\fR
+This option specifies the offset from the top or bottom of screen the text is displayed. The default is \fI0\fR.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+display this help and exit
+.PP
+With no FILE, or when FILE is -, read standard input.
+.SH AUTHOR
+Martijn van de Streek <martijn@foodfight.org>
+.br
+xosd was written by Andre Renaud <andre@ignavus.net>
+.SH SEE ALSO
+More information on the X OSD Library and its author can be found on
+http://www.ignavus.net/software.html
+.SH COPYRIGHT
+It is distributed under the GNU General Public License.

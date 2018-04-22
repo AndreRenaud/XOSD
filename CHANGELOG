@@ -1,3 +1,10 @@
+0.6.0:  Fixed problem in Makefile which caused it to link against an older 
+		version of the library
+ 	Added command line parameters to osd_cat
+        Added a manual page to osd_cat
+        Fixed manual page xosd.3
+        Cleand up the Makefile 
+
 0.5.0:  Fixed problem when using multiple screens, no longer fixed to first
 		screen
 	Fixed bug in xmms plugin which was forcing it to always display at the
