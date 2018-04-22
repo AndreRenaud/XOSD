@@ -17,8 +17,6 @@ Unordered TODOs
 * report that xmms plugin displays volumne instead of title on song change.
   PMH: xmms_get_volume() returns -1 during song changes, which gets interpreted as a volume change.
 
-* Fix outline which is no outline
-  echo . | osd_cat -O 50 -p middle -A center
 * Only update lines which were changed: Add a flag to each line
 * Optimize line drawing to now always use full screen width.
 * Rewrite libxosd, so that one X11-thread can handle multiple displays.
@@ -26,4 +24,14 @@ Unordered TODOs
 The Beep Media Plugin shares significant amounts of code with the xmms
 plugin (not surprisingly seeing that BMP is based on XMMS:). It'd be
 nice to merge the two codebases so that we don't need to apply patches
-to both. 
+to both.
+
+* Handle different locales better:
+  http://bugs.gentoo.org/attachment.cgi?id=77950&action=view
+* Change License of libxosd to LGPL
+* Set non-transparent background color
+* Add alpha-blending
+* Scroll test horizontally
+
+* Rewrite API:
+  Replace xosd_set_*() calls with "union { struct colour, struct font, ... } []"

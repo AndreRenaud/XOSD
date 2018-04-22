@@ -6,7 +6,7 @@ xosd - X on-screen display library
 .nf
 .B #include <xosd.h>
 .sp
-.BI "xosd* xosd_create(int " number_lines ); 
+.BI "xosd* xosd_create(int " number_lines );
 .sp
 .BI "int xosd_uninit (xosd* " osd );
 .sp
@@ -50,30 +50,33 @@ xosd is a library for displaying an on-screen display (like the one on
 many TVs) on your X display. Each function should have it's own manpage.
 .sp
 The latest version can be found on
-http://www.ignavus.net/software.html
+.UR http://sourceforge.net/projects/libxosd/
+http://sourceforge.net/projects/libxosd/
 .PP
 It is distributed under the GNU General Public License.
 
 .SH BUGS
 No known bugs at the moment. There are probably functions that aren't listed here.
 .sp
-Bug reports can be sent to tnw13@cosc.canterbury.ac.nz
+Bug reports can be sent to pmhahn@debian.org
 
 .SH EXAMPLE
 .nf
 #include <xosd.h>
+#include <locale.h>
 
 int main (int argc, char *argv[])
 {
 	xosd *osd;
 
+	setlocale(LC_ALL, "");
 	osd = xosd_create (1);
 
 	xosd_set_font(osd, "fixed");
 	xosd_set_colour(osd, "LawnGreen");
 	xosd_set_timeout(osd, 3);
 	xosd_set_shadow_offset(osd, 1);
-	
+
 	xosd_display (osd, 0, XOSD_string, "Example XOSD output");
 
 	xosd_wait_until_no_display(osd);
@@ -87,8 +90,8 @@ int main (int argc, char *argv[])
 .SH AUTHOR
 Martijn van de Streek <martijn@foodfight.org>, Some patching by Malcolm Valentine <farkit@iprimus.com.au> and Tim Wright <tim@ignavus.net>.
 .PP
-xosd was written by Andre Renaud <andre@ignavus.net> and is maintained by Tim Wright <tim@ignavus.net>.
+xosd was written by Andre Renaud <andre@ignavus.net> and was maintained by Tim Wright <tim@ignavus.net>.
 .SH SEE ALSO
-More information on the X OSD Library and its author can be found on
-http://www.ignavus.net/software.html. Each function has its own man-page.
+More information on the X OSD Library and its author can be found on http://sourceforge.net/projects/libxosd/.
+Each function has its own man-page.
 See there for more information.

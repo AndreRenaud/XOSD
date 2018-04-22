@@ -3,7 +3,7 @@ dnl Configure.ac for xosd
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(xosd, 2.2.14)
+AC_INIT(xosd, 2.2.15)
 AC_CONFIG_SRCDIR(src/testprog.c)
 AM_INIT_AUTOMAKE([no-define])
 
@@ -28,7 +28,7 @@ dnl       AGE = 0;
 dnl }
 LT_CURRENT=4
 LT_AGE=2
-LT_REVISION=14
+LT_REVISION=15
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
@@ -41,7 +41,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
-AC_PATH_XTRA([X11],[X11/Xlib.h],[XrmInitialize()])
+AC_PATH_XTRA([X11],[X11/Xlib.h],[XOpenDisplay(NULL)])
 # We need two libtools, one that builds both shared and static, and
 # one that builds only static.  This is because the resulting libtool
 # does not allow us to choose which to build at runtime.
@@ -105,12 +105,9 @@ then
 	AC_SUBST(BMP_GENERAL_PLUGIN_DIR)
 	no_bmp="yes"
 else
-	no_bmp="no"	
+	no_bmp="no"
 	AC_MSG_WARN("beep media player not found")
 fi
-
-
-
 
 dnl Check for xmms
 AM_PATH_XMMS(1.2.7,,
@@ -156,9 +153,6 @@ AC_MSG_RESULT($beep_media_player_plugin)
 
 AM_CONDITIONAL([BUILD_BEEP_MEDIA_PLUGIN],
 	       [test x"$beep_media_player_plugin" = "xyes" -a x"$no_bmp" == "xyes"])
-
-		
-
 
 dnl OLD plugin
 AC_ARG_ENABLE([old-plugin],

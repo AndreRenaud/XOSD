@@ -1,6 +1,8 @@
 /* XOSD
 
-Copyright (c) 2001 Andre Renaud (andre@ignavus.net)
+Copyright (C) 2000-2002 Andre Renaud <andre@ignavus.net>
+Copyright (C) 2002-2005 Tim Wright <tim@ignavus.net>
+Copyright (C) 2005-2006 Philipp Hahn <pmhahn@debian.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,7 +16,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 #include <gtk/gtk.h>

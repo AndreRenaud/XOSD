@@ -1,3 +1,14 @@
+2.2.15:
+	Fix quotation in configure.ac
+	New maintainer: Philipp Hahn <pmhahn@debian.org>
+	Check for XOpenDisplay() in AC_PATH_EXTRA to get rid of libxt-dev
+	Fix outline (Erik Wasser)
+	Add new options of osd_cat to manual page (Jameson Rollins)
+	Fix xosd.spec.in: no LT_CURRENT, include man pages and pixmaps,
+	  License replaces Copyright
+	Install pixmaps only for new xmms plugin or bmp plugin
+	Update COPYING: the FSF has relocated
+	Licence change from GPL to LGPL for libxosd only
 
 2.2.14:
 	Timeout Bigfix Patch (P Hahn)
@@ -5,7 +16,7 @@
 	Beep Plugin Security Patch (P Hahn)
 
 2.2.13:
-       buffer overflow patch (P Hahn)
+	buffer overflow patch (P Hahn)
 	timeout patch (P Hahn)
 	x window select patch (P Hahn)
 	x event patch (P Hahn)
@@ -13,10 +24,10 @@
 	debug patch (P Hahn)
 	configure.ac patch (P Hahn)
 	beep media player plugin (G Washk)
-	configure patch so xosd compiles when beep media player not 
+	configure patch so xosd compiles when beep media player not
 	  installed (T Wright)
 
-2.2.12: 
+2.2.12:
 	Applied three patches from the debian maintainer. The first cleans
 	up file handles, the second fixes a man page, the third fixes a
 	centering bug, and the last fixes a deadlock.
@@ -26,18 +37,17 @@
 	fixes a bug introduced by a patch in 2.2.9 and the second reorders
 	the main xodf event loop. These patches appear to have increased
 	xosd's speed.
-	
-2.2.10: 
+
+2.2.10:
 	Applied two patches from debian maintainer. The first fixes an
 	alignment problem in libxosd and the second fixes a locale problem
 	in osd_cat.
-	
-2.2.9: 
-        Applied 36 patches from the Debian maintainer. I thought that he
+
+2.2.9:
+	Applied 36 patches from the Debian maintainer. I thought that he
 	was being quiet, but it turns out that my email had magically
 	decided to stop forwarding and I wasn't getting any of his
 	emails. <insert rant about university IT departments here>.
-
 
 2.2.8:
 	investigated using indent. From now on I'll use these arguments to

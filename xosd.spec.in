@@ -4,14 +4,14 @@
 Name:		xosd
 Version:	@VERSION@
 Release:	1
-Vendor:		Andre Renaud <andre@ignavus.net>
-Copyright:	GPL
+Vendor:		Philipp Hahn <pmhahn@debian.org>
+License:	GPL/LGPL
 Group:		System Environment/Libraries
 Packager:	Oron Peled <oron@actcom.co.il>
 Summary:	X On-Screen Display library
 Source:		%name-@VERSION@.tar.gz
 
-URL:		http://www.ignavus.net/software.html
+URL:		http://sourceforge.net/projects/libxosd/
 Buildroot:	%{_tmppath}/%{name}-%{version}-root
 
 %description
@@ -56,12 +56,11 @@ ldconfig
 
 %files
 %defattr(-, root, root)
-%{_libdir}/libxosd.so.@LT_CURRENT@
+%{_libdir}/libxosd.so.*
 %{_libdir}/libxosd.so
 %{_bindir}/osd_cat
 %doc %{_mandir}/man1/osd_cat.1*
-%doc %{_mandir}/man3/xosd.3*
-%doc AUTHORS ChangeLog COPYING NEWS README
+%doc AUTHORS ChangeLog COPYING.LIB COPYING NEWS README TODO
 
 %files devel
 %defattr(-, root, root)
@@ -71,10 +70,12 @@ ldconfig
 %{_bindir}/xosd-config
 %{aclocaldir}/libxosd.m4
 %doc %{_mandir}/man1/xosd-config.1*
+%doc %{_mandir}/man3/xosd*.3*
 
 %files xmms
 %defattr(-, root, root)
 %{plugindir}/libxmms_osd.so
+%{_datadir}/xosd/*.png
 
 %clean
 [ "$RPM_BUILD_ROOT" != "/" ] && [ -d $RPM_BUILD_ROOT ] && rm -rf $RPM_BUILD_ROOT

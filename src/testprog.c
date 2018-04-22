@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <locale.h>
 
 #include "xosd.h"
 
@@ -15,6 +16,9 @@ main(int argc, char *argv[])
 {
   xosd *osd;
   int a;
+
+  if (setlocale(LC_ALL, "") == NULL || !XSupportsLocale())
+    fprintf(stderr, "Locale not available, expect problems with fonts.\n");
 
   osd = xosd_create(2);
 
@@ -67,9 +71,7 @@ main(int argc, char *argv[])
   if (-1 == xosd_display(osd, 1, XOSD_string, ""))
     printerror();
 
-
   xosd_set_bar_length(osd, 14);
-
 
   if (-1 == xosd_display(osd, 0, XOSD_percentage, 80)) {
     printerror();
@@ -130,7 +132,6 @@ main(int argc, char *argv[])
   if (0 != xosd_destroy(osd)) {
     printerror();
   }
-
 
   return EXIT_SUCCESS;
 }
