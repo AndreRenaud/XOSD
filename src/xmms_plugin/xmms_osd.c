@@ -131,8 +131,7 @@ static void init(void)
 static void cleanup(void)
 {
   DEBUG("cleanup");
-  assert(osd);
-  if (timeout_tag)
+  if (osd && timeout_tag)
     gtk_timeout_remove(timeout_tag);
   timeout_tag = 0;
 
@@ -148,8 +147,10 @@ static void cleanup(void)
 
   save_previous_title(NULL);
 
-  xosd_hide (osd);
-  xosd_uninit (osd);
+  if (osd) {
+    xosd_hide (osd);
+    xosd_uninit (osd);
+  }
   osd=NULL;
 }
 

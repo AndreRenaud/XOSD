@@ -29,7 +29,7 @@ int main (int argc, char *argv[])
   char buffer [1024];
   char *newline;
 
-  char *font = "fixed";
+  char *font = (char*) osd_default_font;
   char *color = "red";
   int delay = 5;
   int forcewait=0;
@@ -96,13 +96,14 @@ int main (int argc, char *argv[])
 	case '?':
 	case 'h':
 	  fprintf (stderr, "Usage: %s [OPTION] [FILE]...\n", argv[0]);
+	  fprintf (stderr, "Version: %s \n", XOSD_VERSION);
 	  fprintf (stderr, "Display FILE, or standard input, on top of display.\n\n");
 	  fprintf (stderr, "  -a, --age           Time in seconds before old scroll lines are discarded\n");
 	  fprintf (stderr, "  -t, --top           Display at top of screen\n");
 	  fprintf (stderr, "  -b, --bottom        Display at bottom of screen\n");
 	  fprintf (stderr, "  -A, --align=(left|right|center)\n");
 	  fprintf (stderr, "                      Display at left/right/center of screen\n");
-	  fprintf (stderr, "  -f, --font=FONT     Use font\n");
+	  fprintf (stderr, "  -f, --font=FONT     Use font (default: %s)\n", osd_default_font);
 	  fprintf (stderr, "  -c, --color=COLOR   Use color\n");
 	  fprintf (stderr, "  -d, --delay=TIME    Show for specified time\n");
 	  fprintf (stderr, "  -o, --offset=OFFSET Display Offset\n");

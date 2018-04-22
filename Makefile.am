@@ -1,6 +1,8 @@
 
 SUBDIRS = macros man src script
 
+DISTCLEANFILES = libtool-disable-static
+
 m4datadir	= @M4DATADIR@
 m4data_DATA	= libxosd.m4
 

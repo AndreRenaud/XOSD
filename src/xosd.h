@@ -3,7 +3,7 @@
 
 /* Error message when a routine returns failure */
 extern char *xosd_error;
-
+extern const char* osd_default_font;
 
 /* The XOSD display "object" */
 typedef struct xosd xosd;
