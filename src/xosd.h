@@ -7,12 +7,14 @@ extern "C"
 {
 #endif
 
+
 #if ( __GNUC__ == 3 && __GNUC_MINOR__ > 0 ) || __GNUC__ > 3
 #define __deprecated	__attribute__((deprecated))
 #else
 #define __deprecated
 #endif
 
+	
 /* Error message when a routine returns failure */
   extern char *xosd_error;
   extern const char *osd_default_font;
@@ -26,18 +28,18 @@ extern "C"
 /* The type of data that can be displayed. */
   typedef enum
   {
-    XOSD_percentage,		/* Percentage bar (like a progress bar) */
-    XOSD_string,		/* Text */
-    XOSD_printf,		/* Formatted Text */
-    XOSD_slider			/* Slider (like a volume control) */
+    XOSD_percentage,            /* Percentage bar (like a progress bar) */
+    XOSD_string,                /* Text */
+    XOSD_printf,                /* Formatted Text */
+    XOSD_slider                 /* Slider (like a volume control) */
   } xosd_command;
 
 /* Position of the display */
   typedef enum
   {
-    XOSD_top = 0,		/* Top of the screen. */
-    XOSD_bottom,		/* Bottom of the screen. */
-    XOSD_middle			/* middle of the screen. */
+    XOSD_top = 0,               /* Top of the screen. */
+    XOSD_bottom,                /* Bottom of the screen. */
+    XOSD_middle                 /* middle of the screen. */
   } xosd_pos;
 
 /* Alignment of the display */
@@ -66,12 +68,12 @@ extern "C"
  *     A new xosd structure.
  */
 
-  xosd *xosd_create (int number_lines);
+  xosd *xosd_create(int number_lines);
 
 /* deprecated */
-  xosd *__deprecated xosd_init (const char *font, const char *colour,
-				int timeout, xosd_pos pos, int offset,
-				int shadow_offset, int number_lines);
+  xosd *__deprecated xosd_init(const char *font, const char *colour,
+                               int timeout, xosd_pos pos, int offset,
+                               int shadow_offset, int number_lines);
 
 /* xosd_destroy -- Destroy a xosd "object"
  *
@@ -82,10 +84,10 @@ extern "C"
  *   0 on success
  *  -1 on failure
  */
-  int xosd_destroy (xosd * osd);
+  int xosd_destroy(xosd * osd);
 
 /* deprecated */
-  int __deprecated xosd_uninit (xosd * osd);
+  int __deprecated xosd_uninit(xosd * osd);
 
 /* xosd_set_bar_length  -- Set length of percentage and slider bar
  *
@@ -99,7 +101,7 @@ extern "C"
  *
 */
 
-  int xosd_set_bar_length (xosd * osd, int length);
+  int xosd_set_bar_length(xosd * osd, int length);
 
 
 /* xosd_display -- Display information
@@ -120,7 +122,7 @@ extern "C"
  *     "XOSD_string". -1 is returned on failure.
  */
 
-  int xosd_display (xosd * osd, int line, xosd_command command, ...);
+  int xosd_display(xosd * osd, int line, xosd_command command, ...);
 
 /* xosd_is_onscreen -- Returns weather the display is show
  *
@@ -132,7 +134,7 @@ extern "C"
  *     0 otherwise
  *    -1 on failure
  */
-  int xosd_is_onscreen (xosd * osd);
+  int xosd_is_onscreen(xosd * osd);
 
 /* xosd_wait_until_no_display -- Wait until nothing is displayed
  *
@@ -143,7 +145,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
  */
-  int xosd_wait_until_no_display (xosd * osd);
+  int xosd_wait_until_no_display(xosd * osd);
 
 /* xosd_hide -- hide the display
  *
@@ -154,7 +156,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
  */
-  int xosd_hide (xosd * osd);
+  int xosd_hide(xosd * osd);
 
 /* xosd_show -- Show the display after being hidden
  *
@@ -165,7 +167,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
  */
-  int xosd_show (xosd * osd);
+  int xosd_show(xosd * osd);
 
 
 /* xosd_set_pos -- Change the position of the display
@@ -179,7 +181,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
  */
-  int xosd_set_pos (xosd * osd, xosd_pos pos);
+  int xosd_set_pos(xosd * osd, xosd_pos pos);
 
 /* xosd_set_align -- Change the alignment of the display
  *
@@ -192,7 +194,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
  */
-  int xosd_set_align (xosd * osd, xosd_align align);
+  int xosd_set_align(xosd * osd, xosd_align align);
 
 /* xosd_set_shadow_offset -- Change the offset of the text shadow
  *
@@ -205,7 +207,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
 */
-  int xosd_set_shadow_offset (xosd * osd, int shadow_offset);
+  int xosd_set_shadow_offset(xosd * osd, int shadow_offset);
 
 /* xosd_set_outline_offset -- Change the offset of the text outline
  *
@@ -219,7 +221,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
 */
-  int xosd_set_outline_offset (xosd * osd, int outline_offset);
+  int xosd_set_outline_offset(xosd * osd, int outline_offset);
 
 
 /* xosd_set_outline_colour -- Change the colour of the outline
@@ -233,7 +235,7 @@ extern "C"
  *   0 on success
  *  -1 on failure, and colour is set to black
  */
-  int xosd_set_outline_colour (xosd * osd, const char *colour);
+  int xosd_set_outline_colour(xosd * osd, const char *colour);
 
 /* xosd_set_shadow_colour -- Change the colour of the shadow
  *
@@ -246,7 +248,7 @@ extern "C"
  *   0 on success
  *  -1 on failure, and colour is set to black
  */
-  int xosd_set_shadow_colour (xosd * osd, const char *colour);
+  int xosd_set_shadow_colour(xosd * osd, const char *colour);
 
 
 /* xosd_set_horizontal_offset -- Change the number of pixels the display is
@@ -262,7 +264,7 @@ extern "C"
  *  -1 on failure
  *
 */
-  int xosd_set_horizontal_offset (xosd * osd, int offset);
+  int xosd_set_horizontal_offset(xosd * osd, int offset);
 
 
 /* xosd_set_vertical_offset -- Change the number of pixels the display is
@@ -278,7 +280,7 @@ extern "C"
  *  -1 on failure
  *
 */
-  int xosd_set_vertical_offset (xosd * osd, int offset);
+  int xosd_set_vertical_offset(xosd * osd, int offset);
 
 /* xosd_set_timeout -- Change the time before display is hidden.
  *
@@ -291,7 +293,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
 */
-  int xosd_set_timeout (xosd * osd, int timeout);
+  int xosd_set_timeout(xosd * osd, int timeout);
 
 /* xosd_set_colour -- Change the colour of the display
  *
@@ -304,7 +306,7 @@ extern "C"
  *   0 on success
  *  -1 on failure, and colour is set to white
  */
-  int xosd_set_colour (xosd * osd, const char *colour);
+  int xosd_set_colour(xosd * osd, const char *colour);
 
 /* xosd_set_font -- Change the text-display font
  *
@@ -316,7 +318,7 @@ extern "C"
  *     0 on success
  *    -1 on failure
 */
-  int xosd_set_font (xosd * osd, const char *font);
+  int xosd_set_font(xosd * osd, const char *font);
 
 /* xosd_get_colour -- Gets the RGB value of the display's colour
  *
@@ -330,7 +332,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
 */
-  int xosd_get_colour (xosd * osd, int *red, int *green, int *blue);
+  int xosd_get_colour(xosd * osd, int *red, int *green, int *blue);
 
 /* xosd_scroll -- Scroll the display
  *
@@ -342,7 +344,7 @@ extern "C"
  *   0 on success
  *  -1 on failure
 */
-  int xosd_scroll (xosd * osd, int lines);
+  int xosd_scroll(xosd * osd, int lines);
 
 /* xosd_get_number_lines -- Get the maximum number of lines allowed
  *
@@ -353,7 +355,7 @@ extern "C"
  *   the number of lines on success
  *  -1 on failure
 */
-  int xosd_get_number_lines (xosd * osd);
+  int xosd_get_number_lines(xosd * osd);
 
 #ifdef __cplusplus
 };

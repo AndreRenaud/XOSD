@@ -1,3 +1,17 @@
+2.2.8:
+        investigated using indent. From now on I'll use these arguments to
+	  indent before releasing:
+	    indent -br -ce -bap -bbo -npcs -nprs -nsob -nut xosd.c
+	  (the program indent.sh should indent everything:) (Tim Wright)
+	new version of osd_cat that can do percentage and slider bars (phil gees)
+	speed optimisation (Piotr Chmura)
+	
+2.2.7:
+	Complete rewrite of timeout_func to avoid sending
+	  lineakd to 100% CPU. There was a case where timeout_func 
+	  would keep looping around in circles never pausing for breath.
+	  (Tim Wright)
+
 2.2.6:
         FontSet fixes (Philipp Matthias Hahn)
 	Title change fix (Philipp Matthias Hahn)

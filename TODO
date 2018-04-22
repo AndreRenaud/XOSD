@@ -16,3 +16,8 @@ Unordered TODOs
 * There's a bug in libtool that updates libtool when configure is run. This 
 	stuffs the Mandrake maintainer. Gotta update libtool when a new version 
 	is out.
+
+* xosd window does not stay on top if the window manager is restarted
+
+* report that xmms plugin displays volumne instead of title on song change.
+
