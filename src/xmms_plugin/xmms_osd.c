@@ -25,32 +25,32 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <xmms/xmmsctrl.h>
 #include <xmms/configfile.h>
 
-static void init(void);
-static void cleanup(void);
-static gint timeout_func(gpointer);
+static void init (void);
+static void cleanup (void);
+static gint timeout_func (gpointer);
 
-GeneralPlugin gp =
-{
-	.handle = NULL,
-	.filename = NULL,
-	.xmms_session = -1,
-	.description = "On Screen Display " XOSD_VERSION,
-	.init = init,
-	.about = NULL,
-	.configure = configure,
-	.cleanup = cleanup,
+GeneralPlugin gp = {
+  .handle = NULL,
+  .filename = NULL,
+  .xmms_session = -1,
+  .description = "On Screen Display " XOSD_VERSION,
+  .init = init,
+  .about = NULL,
+  .configure = configure,
+  .cleanup = cleanup,
 };
 
 
-struct state {
-	gboolean playing;
-	gboolean paused;
-	gboolean shuffle;
-	gboolean repeat;
-	int pos;
-	int volume;
-	int balance;
-	gchar *title;
+struct state
+{
+  gboolean playing;
+  gboolean paused;
+  gboolean shuffle;
+  gboolean repeat;
+  int pos;
+  int volume;
+  int balance;
+  gchar *title;
 };
 static struct state previous;
 struct show show;
@@ -75,7 +75,7 @@ gint align;
 GeneralPlugin *
 get_gplugin_info (void)
 {
-	return &gp;
+  return &gp;
 }
 
 
@@ -85,38 +85,38 @@ get_gplugin_info (void)
 static void
 init (void)
 {
-	DEBUG("init");
+  DEBUG ("init");
 
-	if (osd)
-	{
-		DEBUG("uniniting osd");
-		xosd_destroy (osd);
-		osd = NULL;
-	}
+  if (osd)
+    {
+      DEBUG ("uniniting osd");
+      xosd_destroy (osd);
+      osd = NULL;
+    }
 
-	read_config ();
+  read_config ();
 
 #if 0
-	/* Deadlocks, because it is to early. */
-	previous.playing =xmms_remote_is_playing (gp.xmms_session);
-	previous.paused = xmms_remote_is_paused (gp.xmms_session);
-	previous.shuffle = xmms_remote_is_shuffle (gp.xmms_session);
-	previous.repeat = xmms_remote_is_repeat (gp.xmms_session);
-	previous.pos = xmms_remote_get_playlist_pos (gp.xmms_session);
-	previous.volume = xmms_remote_get_main_volume (gp.xmms_session);
-	previous.balance = (xmms_remote_get_balance (gp.xmms_session) + 100) / 2;
-	previous.title = NULL;
+  /* Deadlocks, because it is to early. */
+  previous.playing = xmms_remote_is_playing (gp.xmms_session);
+  previous.paused = xmms_remote_is_paused (gp.xmms_session);
+  previous.shuffle = xmms_remote_is_shuffle (gp.xmms_session);
+  previous.repeat = xmms_remote_is_repeat (gp.xmms_session);
+  previous.pos = xmms_remote_get_playlist_pos (gp.xmms_session);
+  previous.volume = xmms_remote_get_main_volume (gp.xmms_session);
+  previous.balance = (xmms_remote_get_balance (gp.xmms_session) + 100) / 2;
+  previous.title = NULL;
 #else
-	memset (&previous, 0, sizeof (struct state));
+  memset (&previous, 0, sizeof (struct state));
 #endif
 
-	DEBUG("calling osd init function");
+  DEBUG ("calling osd init function");
 
-	osd = xosd_create (2);
-	apply_config ();
-	DEBUG("osd initialized");
-	if (osd)
-		timeout_tag = gtk_timeout_add (100, timeout_func, NULL);
+  osd = xosd_create (2);
+  apply_config ();
+  DEBUG ("osd initialized");
+  if (osd)
+    timeout_tag = gtk_timeout_add (100, timeout_func, NULL);
 }
 
 /*
@@ -125,38 +125,38 @@ init (void)
 static void
 cleanup (void)
 {
-	DEBUG("cleanup");
-	if (osd && timeout_tag)
-		gtk_timeout_remove (timeout_tag);
-	timeout_tag = 0;
+  DEBUG ("cleanup");
+  if (osd && timeout_tag)
+    gtk_timeout_remove (timeout_tag);
+  timeout_tag = 0;
 
-	if (font)
-	{
-		g_free (font);
-		font = NULL;
-	}
+  if (font)
+    {
+      g_free (font);
+      font = NULL;
+    }
 
-	if (colour)
-	{
-		g_free (colour);
-		colour = NULL;
-	}
+  if (colour)
+    {
+      g_free (colour);
+      colour = NULL;
+    }
 
-	if (previous.title)
-	{
-		g_free (previous.title);
-		previous.title = NULL;
-	}
+  if (previous.title)
+    {
+      g_free (previous.title);
+      previous.title = NULL;
+    }
 
-	if (osd)
-	{
-		DEBUG("hide");
-		xosd_hide (osd);
-		DEBUG("uninit");
-		xosd_destroy (osd);
-		DEBUG("done with osd");
-		osd = NULL;
-	}
+  if (osd)
+    {
+      DEBUG ("hide");
+      xosd_hide (osd);
+      DEBUG ("uninit");
+      xosd_destroy (osd);
+      DEBUG ("done with osd");
+      osd = NULL;
+    }
 }
 
 /*
@@ -165,59 +165,60 @@ cleanup (void)
 void
 read_config (void)
 {
-	ConfigFile *cfgfile;
-	DEBUG("read_config");
+  ConfigFile *cfgfile;
+  DEBUG ("read_config");
 
-	show.volume = 1;
-	show.balance = 1;
-	show.pause = 1;
-	show.trackname = 1;
-	show.stop = 1;
-	show.repeat = 1;
-	show.shuffle = 1;
+  show.volume = 1;
+  show.balance = 1;
+  show.pause = 1;
+  show.trackname = 1;
+  show.stop = 1;
+  show.repeat = 1;
+  show.shuffle = 1;
 
-	g_free (colour);
-	g_free (font);
-	colour = NULL;
-	font = NULL;
-	timeout = 3;
-	offset = 50;
-	h_offset = 0;
-	shadow_offset = 1;
-	outline_offset = 0;
-	pos = XOSD_bottom;
-	align = XOSD_left;
+  g_free (colour);
+  g_free (font);
+  colour = NULL;
+  font = NULL;
+  timeout = 3;
+  offset = 50;
+  h_offset = 0;
+  shadow_offset = 1;
+  outline_offset = 0;
+  pos = XOSD_bottom;
+  align = XOSD_left;
 
-	DEBUG("reading configuration data");
-	if ((cfgfile = xmms_cfg_open_default_file ()) != NULL) {
-		xmms_cfg_read_string (cfgfile, "osd", "font", &font);
-		xmms_cfg_read_string (cfgfile, "osd", "colour", &colour);
-		xmms_cfg_read_int (cfgfile, "osd", "timeout", &timeout);
-		xmms_cfg_read_int (cfgfile, "osd", "offset", &offset);
-		xmms_cfg_read_int (cfgfile, "osd", "h_offset", &h_offset);
-		xmms_cfg_read_int (cfgfile, "osd", "shadow_offset", &shadow_offset);
-		xmms_cfg_read_int (cfgfile, "osd", "outline_offset", &outline_offset);
-		xmms_cfg_read_int (cfgfile, "osd", "pos", &pos);
-		xmms_cfg_read_int (cfgfile, "osd", "align", &align);
-		xmms_cfg_read_int (cfgfile, "osd", "show_volume", &show.volume );
-		xmms_cfg_read_int (cfgfile, "osd", "show_balance", &show.balance );
-		xmms_cfg_read_int (cfgfile, "osd", "show_pause", &show.pause );
-		xmms_cfg_read_int (cfgfile, "osd", "show_trackname", &show.trackname );
-		xmms_cfg_read_int (cfgfile, "osd", "show_stop", &show.stop );
-		xmms_cfg_read_int (cfgfile, "osd", "show_repeat", &show.repeat );
-		xmms_cfg_read_int (cfgfile, "osd", "show_shuffle", &show.shuffle );
-		xmms_cfg_free (cfgfile);
-	}
+  DEBUG ("reading configuration data");
+  if ((cfgfile = xmms_cfg_open_default_file ()) != NULL)
+    {
+      xmms_cfg_read_string (cfgfile, "osd", "font", &font);
+      xmms_cfg_read_string (cfgfile, "osd", "colour", &colour);
+      xmms_cfg_read_int (cfgfile, "osd", "timeout", &timeout);
+      xmms_cfg_read_int (cfgfile, "osd", "offset", &offset);
+      xmms_cfg_read_int (cfgfile, "osd", "h_offset", &h_offset);
+      xmms_cfg_read_int (cfgfile, "osd", "shadow_offset", &shadow_offset);
+      xmms_cfg_read_int (cfgfile, "osd", "outline_offset", &outline_offset);
+      xmms_cfg_read_int (cfgfile, "osd", "pos", &pos);
+      xmms_cfg_read_int (cfgfile, "osd", "align", &align);
+      xmms_cfg_read_int (cfgfile, "osd", "show_volume", &show.volume);
+      xmms_cfg_read_int (cfgfile, "osd", "show_balance", &show.balance);
+      xmms_cfg_read_int (cfgfile, "osd", "show_pause", &show.pause);
+      xmms_cfg_read_int (cfgfile, "osd", "show_trackname", &show.trackname);
+      xmms_cfg_read_int (cfgfile, "osd", "show_stop", &show.stop);
+      xmms_cfg_read_int (cfgfile, "osd", "show_repeat", &show.repeat);
+      xmms_cfg_read_int (cfgfile, "osd", "show_shuffle", &show.shuffle);
+      xmms_cfg_free (cfgfile);
+    }
 
-	DEBUG("getting default font");
-	if (font == NULL)
-		font = g_strdup (osd_default_font);
+  DEBUG ("getting default font");
+  if (font == NULL)
+    font = g_strdup (osd_default_font);
 
-	DEBUG("default colour");
-	if (colour == NULL)
-		colour = g_strdup ("green");
+  DEBUG ("default colour");
+  if (colour == NULL)
+    colour = g_strdup ("green");
 
-	DEBUG("done");
+  DEBUG ("done");
 }
 
 /*
@@ -226,91 +227,94 @@ read_config (void)
 void
 write_config (void)
 {
-	ConfigFile *cfgfile;
-	DEBUG("write_config");
+  ConfigFile *cfgfile;
+  DEBUG ("write_config");
 
-	if ((cfgfile = xmms_cfg_open_default_file ()) != NULL) {
-		xmms_cfg_write_string (cfgfile, "osd", "colour", colour);
-		xmms_cfg_write_string (cfgfile, "osd", "font", font);
-		xmms_cfg_write_int (cfgfile, "osd", "timeout", timeout);
-		xmms_cfg_write_int (cfgfile, "osd", "offset", offset);
-		xmms_cfg_write_int (cfgfile, "osd", "h_offset", h_offset);
-		xmms_cfg_write_int (cfgfile, "osd", "shadow_offset", shadow_offset);
-		xmms_cfg_write_int (cfgfile, "osd", "outline_offset", outline_offset);
-		xmms_cfg_write_int (cfgfile, "osd", "pos", pos);
-		xmms_cfg_write_int (cfgfile, "osd", "align", align);
+  if ((cfgfile = xmms_cfg_open_default_file ()) != NULL)
+    {
+      xmms_cfg_write_string (cfgfile, "osd", "colour", colour);
+      xmms_cfg_write_string (cfgfile, "osd", "font", font);
+      xmms_cfg_write_int (cfgfile, "osd", "timeout", timeout);
+      xmms_cfg_write_int (cfgfile, "osd", "offset", offset);
+      xmms_cfg_write_int (cfgfile, "osd", "h_offset", h_offset);
+      xmms_cfg_write_int (cfgfile, "osd", "shadow_offset", shadow_offset);
+      xmms_cfg_write_int (cfgfile, "osd", "outline_offset", outline_offset);
+      xmms_cfg_write_int (cfgfile, "osd", "pos", pos);
+      xmms_cfg_write_int (cfgfile, "osd", "align", align);
 
-		xmms_cfg_write_int (cfgfile, "osd", "show_volume", show.volume );
-		xmms_cfg_write_int (cfgfile, "osd", "show_balance", show.balance );
-		xmms_cfg_write_int (cfgfile, "osd", "show_pause", show.pause );
-		xmms_cfg_write_int (cfgfile, "osd", "show_trackname", show.trackname );
-		xmms_cfg_write_int (cfgfile, "osd", "show_stop", show.stop );
-		xmms_cfg_write_int (cfgfile, "osd", "show_repeat", show.repeat );
-		xmms_cfg_write_int (cfgfile, "osd", "show_shuffle", show.shuffle );
+      xmms_cfg_write_int (cfgfile, "osd", "show_volume", show.volume);
+      xmms_cfg_write_int (cfgfile, "osd", "show_balance", show.balance);
+      xmms_cfg_write_int (cfgfile, "osd", "show_pause", show.pause);
+      xmms_cfg_write_int (cfgfile, "osd", "show_trackname", show.trackname);
+      xmms_cfg_write_int (cfgfile, "osd", "show_stop", show.stop);
+      xmms_cfg_write_int (cfgfile, "osd", "show_repeat", show.repeat);
+      xmms_cfg_write_int (cfgfile, "osd", "show_shuffle", show.shuffle);
 
-		xmms_cfg_write_default_file (cfgfile);
-		xmms_cfg_free (cfgfile);
-	}
+      xmms_cfg_write_default_file (cfgfile);
+      xmms_cfg_free (cfgfile);
+    }
 
-	DEBUG("done");
+  DEBUG ("done");
 }
 
 void
 apply_config (void)
 {
-	DEBUG("apply_config");
-	if (osd)
+  DEBUG ("apply_config");
+  if (osd)
+    {
+      if (xosd_set_font (osd, font) == -1)
 	{
-		xosd_set_colour (osd, colour);
-		xosd_set_timeout (osd, timeout);
-		xosd_set_vertical_offset (osd, offset);
-		xosd_set_horizontal_offset (osd, h_offset);
-		xosd_set_shadow_offset (osd, shadow_offset);
-		xosd_set_outline_offset (osd, outline_offset);
-		xosd_set_pos (osd, pos);
-		xosd_set_align (osd, align);
-		if (xosd_set_font (osd, font) == -1)
-		{
-			DEBUG("invalid font %s", font);
-		}
+	  DEBUG ("invalid font %s", font);
 	}
-	DEBUG("done");
+      xosd_set_colour (osd, colour);
+      xosd_set_timeout (osd, timeout);
+      xosd_set_shadow_offset (osd, shadow_offset);
+      xosd_set_outline_offset (osd, outline_offset);
+      xosd_set_pos (osd, pos);
+      xosd_set_align (osd, align);
+      xosd_set_vertical_offset (osd, offset);
+      xosd_set_horizontal_offset (osd, h_offset);
+    }
+  DEBUG ("done");
 }
 
 /*
  * Convert hexcode to ASCII.
  */
 static void
-replace_hexcodes (gchar *text)
+replace_hexcodes (gchar * text)
 {
-	gchar *head, *tail;
-	int conv_underscore, c;
-	ConfigFile *cfgfile;
-	DEBUG("replace_hexcodes");
+  gchar *head, *tail;
+  int conv_underscore, c;
+  ConfigFile *cfgfile;
+  DEBUG ("replace_hexcodes");
 
-	if ((cfgfile = xmms_cfg_open_default_file ()) != NULL) {
-		xmms_cfg_read_boolean (cfgfile, "xmms", "convert_underscore", &conv_underscore);
-		xmms_cfg_free (cfgfile);
-	}
+  if ((cfgfile = xmms_cfg_open_default_file ()) != NULL)
+    {
+      xmms_cfg_read_boolean (cfgfile, "xmms", "convert_underscore",
+			     &conv_underscore);
+      xmms_cfg_free (cfgfile);
+    }
 
-	for (head = tail = text; *tail; head++,tail++)
+  for (head = tail = text; *tail; head++, tail++)
+    {
+      /* replace underscors with spaces if necessary */
+      if (conv_underscore && *head == '_')
 	{
-		/* replace underscors with spaces if necessary */
-		if (conv_underscore && *head == '_')
-		{
-			*tail = ' ';
-			continue;
-		}
-		/* replace hex with character if necessary */
-		if (*head == '%' && sscanf (head+1, "%2x", &c))
-		{
-			*tail = (char)c;
-			head += 2;
-			continue;
-		}
-		*tail = *head;
+	  *tail = ' ';
+	  continue;
 	}
-	*tail = '\0';
+      /* replace hex with character if necessary */
+      if (*head == '%' && sscanf (head + 1, "%2x", &c))
+	{
+	  *tail = (char) c;
+	  head += 2;
+	  continue;
+	}
+      *tail = *head;
+    }
+  *tail = '\0';
 }
 
 /*
@@ -319,135 +323,146 @@ replace_hexcodes (gchar *text)
 static gint
 timeout_func (gpointer data)
 {
-	struct state current;
-	char *text = NULL;
-	char *title = NULL;
-        char *title2 = NULL;
+  struct state current;
+  char *text = NULL;
+  char *title = NULL;
+  char *title2 = NULL;
 
-	DEBUG("timeout func");
+  DEBUG ("timeout func");
 
-	if (!osd)
-		return FALSE;
+  if (!osd)
+    return FALSE;
 
-	GDK_THREADS_ENTER ();
+  GDK_THREADS_ENTER ();
 
-	current.playing = xmms_remote_is_playing (gp.xmms_session);
-	current.paused = xmms_remote_is_paused (gp.xmms_session);
-	current.shuffle = xmms_remote_is_shuffle (gp.xmms_session);
-	current.repeat = xmms_remote_is_repeat (gp.xmms_session);
-	current.pos = xmms_remote_get_playlist_pos (gp.xmms_session);
-	current.volume = xmms_remote_get_main_volume (gp.xmms_session);
-	current.balance = (xmms_remote_get_balance (gp.xmms_session) + 100) / 2;
-	
+  current.playing = xmms_remote_is_playing (gp.xmms_session);
+  current.paused = xmms_remote_is_paused (gp.xmms_session);
+  current.shuffle = xmms_remote_is_shuffle (gp.xmms_session);
+  current.repeat = xmms_remote_is_repeat (gp.xmms_session);
+  current.pos = xmms_remote_get_playlist_pos (gp.xmms_session);
+  current.volume = xmms_remote_get_main_volume (gp.xmms_session);
+  current.balance = (xmms_remote_get_balance (gp.xmms_session) + 100) / 2;
 
-	/* Get the current title only if the playlist is not empty. Otherwise
-	 * it'll crash. Don't forget to free the title! */
-	current.title = xmms_remote_get_playlist_length (gp.xmms_session)
-		? xmms_remote_get_playlist_title (gp.xmms_session, current.pos)
-		: NULL;
-	if (current.title)
+
+  /* Get the current title only if the playlist is not empty. Otherwise
+   * it'll crash. Don't forget to free the title! */
+  current.title = xmms_remote_get_playlist_length (gp.xmms_session)
+    ? xmms_remote_get_playlist_title (gp.xmms_session, current.pos) : NULL;
+  if (current.title)
+    {
+      replace_hexcodes (current.title);
+    }
+
+  /* Display title when
+   * - play started
+   * - unpaused
+   * - the position changed (playlist advanced)
+   * - title changed (current title was deleted from playlist)
+   *   - no old but new
+   *   - old but no new
+   *   - old and new are different
+   */
+  if ((!previous.playing && current.playing) ||
+      (previous.paused && !current.paused) ||
+      (current.pos != previous.pos) ||
+      (previous.title == NULL && current.title != NULL) ||
+      (previous.title != NULL && current.title == NULL) ||
+      (previous.title != NULL && current.title != NULL &&
+       (g_strcasecmp (previous.title, current.title) != 0)))
+    {
+      if (show.trackname)
 	{
-		replace_hexcodes (current.title);
+	  title = current.title;
+	  if (title != NULL)
+	    {
+	      title2 = malloc (strlen (current.title) + 26);
+	      sprintf (title2, "%i/%i: %s",
+		       xmms_remote_get_playlist_pos (gp.xmms_session) + 1,
+		       xmms_remote_get_playlist_length (gp.xmms_session),
+		       current.title);
+	    }
 	}
+    }
 
-	/* Display title when
-	 * - play started
-	 * - unpaused
-	 * - the position changed (playlist advanced)
-	 * - title changed (current title was deleted from playlist)
-	 *   - no old but new
-	 *   - old but no new
-	 *   - old and new are different
-	 */
-	if ((!previous.playing && current.playing) ||
-			(previous.paused && !current.paused) ||
-			(current.pos != previous.pos) ||
-			(previous.title == NULL && current.title != NULL) ||
-			(previous.title != NULL && current.title == NULL) ||
-			(previous.title != NULL && current.title != NULL && 
-			 (g_strcasecmp (previous.title, current.title) != 0)))
+  /* Determine right text depending on state and title change. */
+  if (!current.playing && (title2 || previous.playing))
+    {
+      if (show.stop)
+	text = "Stopped";
+    }
+  else if (!previous.paused && current.paused)
+    {
+      if (show.pause)
 	{
-		if (show.trackname)
+	  text = "Paused";
+	  if (show.trackname)
+	    {
+	      if (current.title != NULL)
 		{
-		 title=current.title;
-		 if (title!=NULL)
-		 {
-       	          title2=malloc(strlen(current.title)+26);
-		  sprintf(title2,"%i/%i: %s",xmms_remote_get_playlist_pos (gp.xmms_session)+1,xmms_remote_get_playlist_length (gp.xmms_session),current.title);
-		 }
- 		}
-	}
-
-	/* Determine right text depending on state and title change. */
-	if (!current.playing && (title2 || previous.playing))
-	{
-		if (show.stop)
-			text = "Stopped";
-	}
-	else if (!previous.paused && current.paused)
-	{
-		if (show.pause)
-		{
-			text = "Paused";
-			if (show.trackname)
-			{
-			    if (current.title!=NULL)
-			    {
-	    	             title2=malloc(strlen(current.title)+52);
-			     sprintf(title2,"%i/%i: %s (%.2i:%.2i)",xmms_remote_get_playlist_pos (gp.xmms_session)+1,xmms_remote_get_playlist_length (gp.xmms_session),current.title,xmms_remote_get_output_time(gp.xmms_session)/1000/60,xmms_remote_get_output_time(gp.xmms_session)/1000%60);
-			    }
-			}
+		  title2 = malloc (strlen (current.title) + 52);
+		  sprintf (title2, "%i/%i: %s (%.2i:%.2i)",
+			   xmms_remote_get_playlist_pos (gp.xmms_session) + 1,
+			   xmms_remote_get_playlist_length (gp.xmms_session),
+			   current.title,
+			   xmms_remote_get_output_time (gp.xmms_session) /
+			   1000 / 60,
+			   xmms_remote_get_output_time (gp.xmms_session) /
+			   1000 % 60);
 		}
+	    }
 	}
-	else if (previous.paused && !current.paused)
-	{
-		if (show.pause)
-			text = "Unpaused";
-	}
-	else if (current.playing && (title2 || !previous.playing))
-	{
-		text = "Play";
-	}
+    }
+  else if (previous.paused && !current.paused)
+    {
+      if (show.pause)
+	text = "Unpaused";
+    }
+  else if (current.playing && (title2 || !previous.playing))
+    {
+      text = "Play";
+    }
 
-	/* Decide what to display, in decreasing priority. */
-	if (text)
-	{
-		xosd_display (osd, 0, XOSD_string, text);
-		xosd_display (osd, 1, XOSD_string, title2 ? title2 : "");
-	}
-	else if (current.volume != previous.volume && show.volume)
-	{
-		xosd_display (osd, 0, XOSD_string, "Volume");
-		xosd_display (osd, 1, XOSD_percentage, current.volume);
-	}
-	else if (current.balance != previous.balance && show.balance)
-	{
-		xosd_display (osd, 0, XOSD_string, "Balance");
-		xosd_display (osd, 1, XOSD_slider, current.balance);
-	}
-	else if (current.repeat != previous.repeat && show.repeat )
-	{
-		xosd_display (osd, 0, XOSD_string, "Repeat");
-		xosd_display (osd, 1, XOSD_string, current.repeat ? "On" : "Off");
-	}
-	else if (current.shuffle != previous.shuffle && show.shuffle )
-	{
-		xosd_display (osd, 0, XOSD_string, "Shuffle");
-		xosd_display (osd, 1, XOSD_string, current.shuffle ? "On" : "Off");
-	}
+  /* Decide what to display, in decreasing priority. */
+  if (text)
+    {
+      xosd_display (osd, 0, XOSD_string, text);
+      xosd_display (osd, 1, XOSD_string, title2 ? title2 : "");
+    }
+  else if (current.volume != previous.volume && show.volume)
+    {
+      xosd_display (osd, 0, XOSD_string, "Volume");
+      xosd_display (osd, 1, XOSD_percentage, current.volume);
+    }
+  else if (current.balance != previous.balance && show.balance)
+    {
+      xosd_display (osd, 0, XOSD_string, "Balance");
+      xosd_display (osd, 1, XOSD_slider, current.balance);
+    }
+  else if (current.repeat != previous.repeat && show.repeat)
+    {
+      xosd_display (osd, 0, XOSD_string, "Repeat");
+      xosd_display (osd, 1, XOSD_string, current.repeat ? "On" : "Off");
+    }
+  else if (current.shuffle != previous.shuffle && show.shuffle)
+    {
+      xosd_display (osd, 0, XOSD_string, "Shuffle");
+      xosd_display (osd, 1, XOSD_string, current.shuffle ? "On" : "Off");
+    }
 
-	if (title2) free(title2);
+  if (title2)
+    free (title2);
 
-	/* copy current state (including title) for future comparison. Free old
-	 * title first. */
-	if (previous.title)
-		g_free (previous.title);
-	previous = current;
+  /* copy current state (including title) for future comparison. Free old
+   * title first. */
+  if (previous.title)
+    g_free (previous.title);
+  previous = current;
 
-	GDK_THREADS_LEAVE ();
+  GDK_THREADS_LEAVE ();
 
-    
-	return TRUE;
+
+  return TRUE;
 }
+
 /* vim: tabstop=8 shiftwidth=8 noexpandtab
  */

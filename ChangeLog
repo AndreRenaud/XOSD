@@ -1,3 +1,9 @@
+2.2.5:
+        set font patch (Joachim "nomeata" Breitner)
+	cleanup "draw_bar" method patch (Philipp Matthias Hahn)
+	ran all source and header files through 'indent' for 
+	  consistancy (Tim Wright). Used default arguents --- GNU style.
+	
 2.2.4:  outline/shadow cut fix (Tomas Janousek)
 	xmms_plugin: added outline (Ondrej Novy)
 		     added playlist_pos/playlist_length (Ondrej Novy)

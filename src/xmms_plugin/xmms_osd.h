@@ -12,14 +12,15 @@
 #define DEBUG(fmt, a...)
 #endif
 
-struct show {
-	gboolean volume;
-	gboolean balance;
-	gboolean pause;
-	gboolean trackname;
-	gboolean stop;
-	gboolean repeat;
-	gboolean shuffle;
+struct show
+{
+  gboolean volume;
+  gboolean balance;
+  gboolean pause;
+  gboolean trackname;
+  gboolean stop;
+  gboolean repeat;
+  gboolean shuffle;
 };
 extern struct show show;
 
@@ -35,13 +36,13 @@ extern gint align;
 
 /* dlg_font.c */
 extern GtkWidget *font_entry;
-extern int font_dialog_window (GtkButton *button, gpointer user_data);
+extern int font_dialog_window (GtkButton * button, gpointer user_data);
 /* dlg_colour.c */
 extern GtkWidget *colour_entry;
-extern int colour_dialog_window (GtkButton *button, gpointer user_data);
+extern int colour_dialog_window (GtkButton * button, gpointer user_data);
 /* dlg_config.c */
 extern void configure (void);
-extern int colour_dialog_window (GtkButton *button, gpointer user_data);
+extern int colour_dialog_window (GtkButton * button, gpointer user_data);
 /* xmms_osd.c */
 extern xosd *osd;
 extern void read_config (void);
