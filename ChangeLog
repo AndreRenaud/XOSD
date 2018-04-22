@@ -1,3 +1,12 @@
+1.0.1:	
+	Merged xosd code-clean and alignment branch (Hans Verkuil's branch)
+	  this branch also implements XOSD_printf, fixes a bug
+	  in xosd_scroll, fixes flickering, and has minor speed 
+	  improvements. Shouts out to Hans :)
+	Removed Xutf8 calls. Weren't working on some platforms (Tim Wright).
+	Better error reporting for osd_cat (Tim Wright)
+	More features in the xmms plugin (Tim Wright)
+	osd_cat alignment option: -A (Tim Wright)
 
 1.0.0:
 	Applied proper xosd-multiline patch (Damien Elmes)

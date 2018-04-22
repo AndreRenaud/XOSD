@@ -14,7 +14,7 @@ static struct option long_options[] = {
   {"offset", 1, NULL, 'o'},
   {"top",    0, NULL, 't'},
   {"bottom", 0, NULL, 'b'},
-  {"help",   0, NULL, 'h'},
+  {"align",  1, NULL, 'A'},
   {"shadow", 1, NULL, 's'}, 
   {"age",    1, NULL, 'a'},
   {"lines",  1, NULL, 'l'},
@@ -40,11 +40,12 @@ int main (int argc, char *argv[])
   struct timeval old_age,new_age;
   int screen_line = 0;
   int lines=5;
-
+  xosd_align align=XOSD_left;
+   
   while (1)
     {
       int option_index = 0;
-      int c = getopt_long (argc, argv, "l:a:f:c:d:o:s:tbhw", long_options, &option_index);
+      int c = getopt_long (argc, argv, "l:A:a:f:c:d:o:s:tbhw", long_options, &option_index);
       if (c == -1) break;
       switch (c)
 	{
@@ -54,7 +55,20 @@ int main (int argc, char *argv[])
 	case 'w':
 	  forcewait=1;
 	  break;
-
+	case 'A':
+	  if (strcasecmp(optarg,"left")==0) {
+	    align=XOSD_left;
+	  } else if (strcasecmp(optarg,"right")==0) {
+	    align=XOSD_right;
+	  } else if (strcasecmp(optarg,"center")==0) {
+	    align=XOSD_center;
+	  } else if (strcasecmp(optarg,"centre")==0) {
+	    align=XOSD_center;
+	  } else {
+	    fprintf (stderr, "Unknown alignment: %s\n", optarg);
+	    return EXIT_FAILURE;
+	  }
+	  break;
 	case 'f':
 	  font = optarg;
 	  break;
@@ -86,6 +100,8 @@ int main (int argc, char *argv[])
 	  fprintf (stderr, "  -a, --age           Time in seconds before old scroll lines are discarded\n");
 	  fprintf (stderr, "  -t, --top           Display at top of screen\n");
 	  fprintf (stderr, "  -b, --bottom        Display at bottom of screen\n");
+	  fprintf (stderr, "  -A, --align=(left|right|center)\n");
+	  fprintf (stderr, "                      Display at left/right/center of screen\n");
 	  fprintf (stderr, "  -f, --font=FONT     Use font\n");
 	  fprintf (stderr, "  -c, --color=COLOR   Use color\n");
 	  fprintf (stderr, "  -d, --delay=TIME    Show for specified time\n");
@@ -113,10 +129,10 @@ int main (int argc, char *argv[])
   osd = xosd_init (font, color, delay, pos, offset, shadow, lines);
   if (!osd)
     {
-      fprintf (stderr, "Error initializing osd\n");
+      fprintf (stderr, "Error initializing osd: %s\n", xosd_error);
       return EXIT_FAILURE;
     }
-   
+  xosd_set_align (osd, align);   
   /* Not really needed, but at least we aren't throwing around an unknown value */
   old_age.tv_sec=0;
 

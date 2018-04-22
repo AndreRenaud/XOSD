@@ -13,7 +13,7 @@ typedef enum
   {
      XOSD_percentage, /* Percentage bar (like a progress bar) */
      XOSD_string,     /* Text */
-     XOSD_printf,     /* Not implemented */
+     XOSD_printf,     /* Formatted Text */
      XOSD_slider      /* Slider (like a volume control) */
   } xosd_command;
 
@@ -23,6 +23,14 @@ typedef enum
     XOSD_top,    /* Top of the screen. */
     XOSD_bottom  /* Bottom of the screen. */
   } xosd_pos;
+
+/* Alignment of the display */
+typedef enum
+  {
+    XOSD_left,
+    XOSD_center,
+    XOSD_right
+  } xosd_align;
 
 /* xosd_init -- Create a new xosd "object"
  *
@@ -63,13 +71,13 @@ int xosd_uninit (xosd *osd);
  *     line     Which one of "NLINES" to display.
  *     command  The type of information to display.
  *     ...      The argument to "command":
- *                  int     (between 1 and 100) if "command" is
+ *                  int     (between 0 and 100) if "command" is
  *                          "XOSD_percentage",
  *                  char *  if "command" is "XOSD_string",
- *                  int     (between 1 and 100) if "command" is
+ *                  int     (between 0 and 100) if "command" is
  *                          "XOSD_slider".
  * RETURNS
- *     The percentage (between 1 and 100) for "XOSD_percentage" or
+ *     The percentage (between 0 and 100) for "XOSD_percentage" or
  *     "XOSD_slider", or the number of characters displayed for
  *     "XOSD_string". -1 is returned on failure.
  */
@@ -134,6 +142,19 @@ int xosd_show (xosd *osd);
  *  -1 on failure
  */
 int xosd_set_pos (xosd *osd, xosd_pos pos);
+
+/* xosd_set_align -- Change the alignment of the display
+ *
+ * ARGUMENTS
+ *     osd      The xosd "object".
+ *     align    The new alignment of the display.
+ *
+ *
+ * RETURNS
+ *   0 on success
+ *  -1 on failure
+ */
+int xosd_set_align (xosd *osd, xosd_align align);
 
 /* xosd_set_shadow_offset -- Change the offset of the text shadow
  *

@@ -38,6 +38,7 @@ static void cleanup(void);
 static gint timeout_func(gpointer);
 static void read_config (void);
 static void configure (void);
+static show_item(GtkWidget* vbox, const char* description, int selected, GtkToggleButton** on);
 
 GeneralPlugin gp =
   {
@@ -58,15 +59,29 @@ static gchar * previous_title = 0;
 static gboolean previous_playing, previous_paused, previous_repeat, previous_shuffle;
 static gchar *font;
 static gchar *colour;
+
 static gint timeout;
 static gint offset;
 static gint shadow_offset;
-gint vol;
 static gint pos;
+
+static gboolean show_volume;
+static gboolean show_balance;
+static gboolean show_pause;
+static gboolean show_trackname;
+static gboolean show_stop;
+static gboolean show_repeat;
+static gboolean show_shuffle;
+
 static GtkObject *timeout_obj, *offset_obj, *shadow_obj;
 static GtkWidget *configure_win, *font_entry, *colour_entry, 
-  *timeout_spin, *offset_spin, *pos_top, *pos_bottom, *shadow_spin,
-  *vol_on, *vol_off;
+  *timeout_spin, *offset_spin, *pos_top, *pos_bottom, *shadow_spin;
+
+static GtkToggleButton
+  *vol_on, *bal_on,
+  *pause_on,  *trackname_on,
+  *stop_on,  *repeat_on,
+  *shuffle_on;
 
 GeneralPlugin *get_gplugin_info(void)
 {
@@ -129,7 +144,14 @@ static void read_config (void)
 
   ConfigFile *cfgfile;
    
-  vol = 1;
+  show_volume = 1;
+  show_balance = 1;
+  show_pause = 1;
+  show_trackname = 1;
+  show_stop = 1;
+  show_repeat = 1;
+  show_shuffle = 1;
+
   g_free (colour);
   g_free (font);
   colour = NULL;
@@ -142,13 +164,19 @@ static void read_config (void)
   DEBUG("read config");
   if ((cfgfile = xmms_cfg_open_default_file ()) != NULL)
     {
-      xmms_cfg_read_int (cfgfile, "osd", "vol", &vol);
       xmms_cfg_read_string (cfgfile, "osd", "font", &font);
       xmms_cfg_read_string (cfgfile, "osd", "colour", &colour);
       xmms_cfg_read_int (cfgfile, "osd", "timeout", &timeout);
       xmms_cfg_read_int (cfgfile, "osd", "offset", &offset);
       xmms_cfg_read_int (cfgfile, "osd", "pos", &pos);
       xmms_cfg_read_int (cfgfile, "osd", "shadow_offset", &shadow_offset);
+      xmms_cfg_read_int (cfgfile, "osd", "show_volume", &show_volume );
+      xmms_cfg_read_int (cfgfile, "osd", "show_balance", &show_balance );
+      xmms_cfg_read_int (cfgfile, "osd", "show_pause", &show_pause );
+      xmms_cfg_read_int (cfgfile, "osd", "show_trackname", &show_trackname );
+      xmms_cfg_read_int (cfgfile, "osd", "show_stop", &show_stop );
+      xmms_cfg_read_int (cfgfile, "osd", "show_repeat", &show_repeat );
+      xmms_cfg_read_int (cfgfile, "osd", "show_shuffle", &show_shuffle );
       xmms_cfg_free(cfgfile);
     }
    
@@ -158,17 +186,23 @@ static void read_config (void)
     colour = g_strdup ("green");
 }
 
+static gboolean isactive(GtkToggleButton *item) {
+  return gtk_toggle_button_get_active (item)? 1 : 0;
+}
+
 static void configure_apply_cb (gpointer data)
 
 {
 
   ConfigFile *cfgfile;
 
-  DEBUG("configure_apply_cb");
-   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (vol_on)))
-      vol = 1;
-   else
-      vol = 0;
+  show_volume=isactive(vol_on);
+  show_balance=isactive(bal_on);
+  show_pause=isactive(pause_on);
+  show_trackname=isactive(trackname_on);
+  show_stop=isactive(stop_on);
+  show_repeat=isactive(repeat_on);
+  show_shuffle=isactive(shuffle_on);
 
    
   if (colour)
@@ -200,13 +234,21 @@ static void configure_apply_cb (gpointer data)
     }
 
   cfgfile = xmms_cfg_open_default_file();
-  xmms_cfg_write_int(cfgfile, "osd", "vol", vol);
   xmms_cfg_write_string(cfgfile, "osd", "colour", colour);
   xmms_cfg_write_string(cfgfile, "osd", "font", font);
   xmms_cfg_write_int(cfgfile, "osd", "timeout", timeout);
   xmms_cfg_write_int(cfgfile, "osd", "offset", offset);
   xmms_cfg_write_int(cfgfile, "osd", "shadow_offset", shadow_offset);
   xmms_cfg_write_int(cfgfile, "osd", "pos", pos);
+
+  xmms_cfg_write_int (cfgfile, "osd", "show_volume", show_volume );
+  xmms_cfg_write_int (cfgfile, "osd", "show_balance", show_balance );
+  xmms_cfg_write_int (cfgfile, "osd", "show_pause", show_pause );
+  xmms_cfg_write_int (cfgfile, "osd", "show_trackname", show_trackname );
+  xmms_cfg_write_int (cfgfile, "osd", "show_stop", show_stop );
+  xmms_cfg_write_int (cfgfile, "osd", "show_repeat", show_repeat );
+  xmms_cfg_write_int (cfgfile, "osd", "show_shuffle", show_shuffle );
+
   xmms_cfg_write_default_file(cfgfile);
   xmms_cfg_free(cfgfile);
 }
@@ -364,7 +406,9 @@ static int colour_dialog_window (GtkButton *button, gpointer user_data)
 static void configure (void)
 {
   GtkWidget *vbox, *bbox, *ok, *cancel, *apply, *hbox, *label, 
-    *button, *unit_label;
+    *button, *unit_label, *hbox2, *vbox2, *sep;
+
+
   GSList *group = NULL;
    
   DEBUG("configure");
@@ -381,7 +425,7 @@ static void configure (void)
   gtk_window_set_title (GTK_WINDOW (configure_win), 
 			"On Screen Display Configuration - " XOSD_VERSION);
    
-  vbox = gtk_vbox_new (TRUE, 10);
+  vbox = gtk_vbox_new (FALSE, 10);
   gtk_container_add (GTK_CONTAINER (configure_win), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (configure_win), 5);
    
@@ -455,23 +499,6 @@ static void configure (void)
    
 
   hbox = gtk_hbox_new (FALSE, 5);
-  
-  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-  label = gtk_label_new ("Show Volume and Balance :");
-  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-  vol_on = gtk_radio_button_new_with_label (NULL, "Yes");
-  group = gtk_radio_button_group (GTK_RADIO_BUTTON (vol_on));
-  vol_off = gtk_radio_button_new_with_label (group, "No");
-  gtk_box_pack_start (GTK_BOX (hbox), vol_on, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (hbox), vol_off, FALSE, FALSE, 0);
-   
-  if (vol == 1)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (vol_on), TRUE);
-  else
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (vol_off), TRUE);
-  
-
-  hbox = gtk_hbox_new (FALSE, 5);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
   label = gtk_label_new ("Position:");
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
@@ -485,6 +512,52 @@ static void configure (void)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pos_top), TRUE);
   else
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pos_bottom), TRUE);
+
+
+  /*
+  hbox = gtk_hbox_new (FALSE, 5);
+  
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+  label = gtk_label_new ("Volume :");
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+  vol_on = gtk_radio_button_new_with_label (NULL, "Yes");
+  group = gtk_radio_button_group (GTK_RADIO_BUTTON (vol_on));
+  vol_off = gtk_radio_button_new_with_label (group, "No");
+  gtk_box_pack_start (GTK_BOX (hbox), vol_on, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox), vol_off, FALSE, FALSE, 0);
+   
+  if (show_volume == 1)
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (vol_on), TRUE);
+  else
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (vol_off), TRUE);
+  */
+
+  sep=gtk_hseparator_new();
+  gtk_box_pack_start (GTK_BOX (vbox), sep, FALSE, FALSE, 0); 
+  
+  hbox2 = gtk_hbox_new (FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 0);
+  label=gtk_label_new("Show:");
+  gtk_box_pack_start (GTK_BOX (hbox2), label, FALSE, FALSE, 0);
+
+  hbox2 = gtk_hbox_new (FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 0);
+
+  vbox2 = gtk_vbox_new (FALSE, 4);
+  gtk_box_pack_start (GTK_BOX (hbox2), vbox2, FALSE, FALSE, 0);
+
+  show_item(vbox2, "Volume", show_volume, &vol_on);
+  show_item(vbox2, "Balance", show_balance, &bal_on);
+  show_item(vbox2, "Pause", show_pause, &pause_on);
+  show_item(vbox2, "Track Name", show_trackname, &trackname_on);
+  vbox2 = gtk_vbox_new (FALSE, 5);
+  gtk_box_pack_start (GTK_BOX (hbox2), vbox2, FALSE, FALSE, 0);
+  show_item(vbox2, "Stop", show_stop, &stop_on);
+  show_item(vbox2, "Repeat", show_repeat, &repeat_on);
+  show_item(vbox2, "Shuffle", show_shuffle, &shuffle_on);
+ 
+  sep=gtk_hseparator_new();
+  gtk_box_pack_start (GTK_BOX (vbox), sep, FALSE, FALSE, 0);
 
   bbox = gtk_hbutton_box_new ();
   gtk_button_box_set_layout (GTK_BUTTON_BOX (bbox), GTK_BUTTONBOX_END);
@@ -581,7 +654,7 @@ static gint timeout_func(gpointer data)
    *        1) 'get_playlist_time' seems "variable" for a song, don't use it
    *        2) we must free the titles we download
    */
-  if (pos != previous_song )
+  if (pos != previous_song)
     {
       if (xmms_remote_get_playlist_length (gp.xmms_session)) /* otherwise it'll crash */
 	{
@@ -594,23 +667,27 @@ static gint timeout_func(gpointer data)
 	   */
 	  if ( !previous_title || 
 	       g_strcasecmp(text, previous_title) != 0 ) { 
-	    xosd_display (osd, 0, XOSD_string, playing ? "Play" : "Stopped");
-	    xosd_display (osd, 1, XOSD_string, text);		       
+	    if (show_stop) {
+	      xosd_display (osd, 0, XOSD_string, playing ? "Play" : "Stopped");
+	      xosd_display (osd, 1, XOSD_string, text);		       
+	    }
 	  }
 
 	  save_previous_title( text );
 	} else { 
 	  /** No song titles available. */
-	  xosd_display (osd, 0, XOSD_string, playing ? "Play" : "Stopped");
+	  if (show_stop) {
+	    xosd_display (osd, 0, XOSD_string, playing ? "Play" : "Stopped");
+	  }
 	  save_previous_title( 0 );
 	}
        
       previous_song = pos;
     }
    
-  else if (playing != previous_playing)
+  else if (playing != previous_playing )
     {
-      if (playing)
+      if (playing && show_trackname)
 	{
 	  xosd_display (osd, 0, XOSD_string, "Play");
 	  text = xmms_remote_get_playlist_title (gp.xmms_session, pos);
@@ -618,7 +695,7 @@ static gint timeout_func(gpointer data)
 	  xosd_display (osd, 1, XOSD_string, text);
 	  save_previous_title ( text );
 	}
-      else
+      else if (!playing && show_stop )
 	{
 	  xosd_display (osd, 0, XOSD_string, "Stop");
 	  xosd_display (osd, 1, XOSD_string, "");      
@@ -627,7 +704,7 @@ static gint timeout_func(gpointer data)
       previous_playing = playing;
     }
 
-  else if (paused != previous_paused)
+  else if (paused != previous_paused && show_pause)
     {
       if (paused)
 	{
@@ -645,14 +722,14 @@ static gint timeout_func(gpointer data)
       previous_paused = paused;
     }
 
-  else if (volume != previous_volume && vol != 0)
+  else if (volume != previous_volume && show_volume)
     {
       xosd_display (osd, 0, XOSD_string, "Volume");
       xosd_display (osd, 1, XOSD_percentage, volume);
       previous_volume = volume;
     }
    
-  else if (balance != previous_balance && vol != 0)
+  else if (balance != previous_balance && show_balance)
     {
       xosd_display (osd, 0, XOSD_string, "Balance");
       xosd_display (osd, 1, XOSD_slider, balance);
@@ -660,7 +737,7 @@ static gint timeout_func(gpointer data)
       previous_balance = balance;
     }
 
-  else if (repeat != previous_repeat)
+  else if (repeat != previous_repeat && show_repeat )
     {
       xosd_display (osd, 0, XOSD_string, "Repeat");
       xosd_display (osd, 1, XOSD_string, repeat ? "On" : "Off");
@@ -668,7 +745,7 @@ static gint timeout_func(gpointer data)
       previous_repeat = repeat;
     }
    
-  else if (shuffle != previous_shuffle)
+  else if (shuffle != previous_shuffle && show_shuffle )
     {
       xosd_display (osd, 0, XOSD_string, "Shuffle");
       xosd_display (osd, 1, XOSD_string, shuffle ? "On" : "Off");
@@ -679,4 +756,33 @@ static gint timeout_func(gpointer data)
   GDK_THREADS_LEAVE();
 
   return TRUE;
+}
+
+show_item(GtkWidget* vbox, const char* description, int selected, GtkToggleButton** on)
+{
+  //GtkWidget  *hbox, *label;
+  //GSList *group = NULL;
+
+  //hbox = gtk_hbox_new (FALSE, 5);
+  
+  //gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+
+  *on = (GtkToggleButton*) gtk_check_button_new_with_label(description);
+  gtk_box_pack_start (GTK_BOX (vbox), (GtkWidget*)*on, FALSE, FALSE, 0);
+
+  /*label = gtk_label_new (description);
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+
+  *on = gtk_radio_button_new_with_label (NULL, "Yes");
+  group = gtk_radio_button_group (GTK_RADIO_BUTTON (*on));
+  *off = gtk_radio_button_new_with_label (group, "No");
+
+  gtk_box_pack_start (GTK_BOX (hbox), *on, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox), *off, FALSE, FALSE, 0);
+ 
+  */
+  
+  gtk_toggle_button_set_active (*on, selected);
+
+  
 }
