@@ -109,7 +109,7 @@ int main (int argc, char *argv[])
 	  fprintf (stderr, "  -o, --offset=OFFSET Display Offset\n");
 	  fprintf (stderr, "  -h, --help          Show this help\n");
 	  fprintf (stderr, "  -s, --shadow=SHADOW Offset of shadow, default is 0 which is no shadow\n");
-	  fprintf (stderr, "  -i, --immediate     Immediatly display new data when ready\n");
+	  fprintf (stderr, "  -w, --wait          Delay display even when new lines are ready\n");
 	  fprintf (stderr, "  -l, --lines=n       Scroll using n lines. Default is 5.\n");
 	  fprintf (stderr, "\nWith no FILE, or when FILE is -, read standard input.\n");
 	  return EXIT_SUCCESS;
@@ -142,7 +142,7 @@ int main (int argc, char *argv[])
 
   while (!feof (fp))
     {
-      if (fgets (buffer, 1023, fp))
+      if (fgets (buffer, sizeof(buffer)-1, fp))
 	{
 	  /* Should we age the display? */
 	  if (scroll_age)

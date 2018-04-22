@@ -1,3 +1,12 @@
+1.1.1:
+        X concurrency control patch (Tim Wright)
+        misc bug fixes (Philipp Matthias Hahn)
+        osd_cat man page patch (Philipp Matthias Hahn)
+        Updated version numbers to be in line with Debian (Philipp Matthias Hahn)
+	Applied X Display leak (Damien Elmes)
+	Fixed center not working for sliders (Tim Wright based on
+	  suggestions from Torsten Sievers)
+	
 1.0.4:
         Eungkyu Song's "xmms hanging in some non-C locale's patch" (Eungkyu Song)
 	xmms plugin uses xosd default font (Tim Wright)

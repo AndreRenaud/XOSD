@@ -27,7 +27,7 @@ typedef enum
 /* Alignment of the display */
 typedef enum
   {
-    XOSD_left,
+    XOSD_left=0,
     XOSD_center,
     XOSD_right
   } xosd_align;

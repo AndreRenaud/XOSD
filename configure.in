@@ -1,24 +1,20 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/testprog.c)
-AM_INIT_AUTOMAKE(xosd, 1.0.3)
-
-# We need two libtools, one that builds both shared and static, and
-# one that builds only static.  This is because the resulting libtool
-# does not allow us to choose which to build at runtime.
-AM_PROG_LIBTOOL
-sed -e 's/^build_old_libs=yes/build_old_libs=no/' libtool > libtool-disable-static
-chmod +x libtool-disable-static
-
 # version crud
-LT_CURRENT=1
-LT_AGE=0
-LT_REVISION=4
+LT_CURRENT=2
+LT_AGE=1
+LT_REVISION=1
+
+VERSION=1.1.1
+
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
 AC_SUBST(LT_REVISION)
 
 PACKAGE=xosd
-VERSION=${LT_CURRENT}.${LT_AGE}.${LT_REVISION}
+
+AM_INIT_AUTOMAKE(${PACKAGE}, ${VERSION})
+
 
 
 AM_MAINTAINER_MODE
@@ -29,6 +25,11 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
 AC_PATH_XTRA
+# We need two libtools, one that builds both shared and static, and
+# one that builds only static.  This is because the resulting libtool
+# does not allow us to choose which to build at runtime.
+sed -e 's/^build_old_libs=yes/build_old_libs=no/' libtool > libtool-disable-static
+chmod +x libtool-disable-static
 
 LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
 CFLAGS="$CFLAGS $X_CFLAGS"
@@ -47,7 +48,6 @@ dnl Replace `main' with a function in -libs:
 AC_CHECK_LIB(ibs, main)
 dnl Replace `main' with a function in -lpthread:
 AC_CHECK_LIB(pthread, main)
-
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)

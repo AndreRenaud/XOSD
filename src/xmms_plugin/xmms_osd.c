@@ -31,7 +31,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <xosd.h>
 
-#define DEBUG(a) /* fprintf (stderr, "%s: %s: %d: %s\n", __FILE__, __PRETTY_FUNCTION__, __LINE__, a) */
+#define DEBUG(a) /*fprintf (stderr, "%s: %s: %d: %s\n", __FILE__, __PRETTY_FUNCTION__, __LINE__, a)*/
 
 static void init(void);
 static void cleanup(void);
@@ -119,8 +119,10 @@ static void init(void)
     0;
   previous_title = 0;
 
+  DEBUG("calling osd init function");
   osd = xosd_init (font, colour, timeout, pos, offset, shadow_offset, 2);
 
+  DEBUG("osd initialized");
   if (osd)
     timeout_tag = gtk_timeout_add (100, timeout_func, NULL);
 }
@@ -148,10 +150,13 @@ static void cleanup(void)
   save_previous_title(NULL);
 
   if (osd) {
+    DEBUG("hide");
     xosd_hide (osd);
+    DEBUG("uninit");
     xosd_uninit (osd);
+    DEBUG("done with osd");
+    osd=NULL;
   }
-  osd=NULL;
 }
 
 /*
@@ -181,8 +186,10 @@ static void read_config (void)
   pos = XOSD_bottom;
 
   DEBUG("read config");
+
   if ((cfgfile = xmms_cfg_open_default_file ()) != NULL)
     {
+      DEBUG("reading configuration data");
       xmms_cfg_read_string (cfgfile, "osd", "font", &font);
       xmms_cfg_read_string (cfgfile, "osd", "colour", &colour);
       xmms_cfg_read_int (cfgfile, "osd", "timeout", &timeout);
@@ -199,10 +206,15 @@ static void read_config (void)
       xmms_cfg_free(cfgfile);
     }
 
+  DEBUG("getting default font");
   if (font == NULL)
     font = g_strdup (osd_default_font);
+
+  DEBUG("default colour");
   if (colour == NULL)
     colour = g_strdup ("green");
+
+  DEBUG("done");
 }
 
 /*
@@ -643,10 +655,13 @@ static void configure (void)
  * gotten through glib allocations.
  */
 static void save_previous_title ( gchar * title ) {
-  DEBUG("save_previous_title");
-  if ( previous_title )
+  DEBUG("enter");
+  if ( previous_title ) {
+    DEBUG("freeing");
     g_free( previous_title );
+  }
   previous_title = title;
+  DEBUG("exit");
 }
 
 /*
