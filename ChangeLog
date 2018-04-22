@@ -1,3 +1,15 @@
+
+2.0.2:  
+	xosd_init font related segfault bug fix (Damien Elmes)
+	xosd not resizing properly now and then fix (Damien Elmes)
+	xosd_display segfault fix with invalid line number (Tim Wright)
+	work on xosd.spec file and autoconf stuff (Tim Wright)
+	updated testprog to have error reporting and do cooler stuff (Tim Wright)
+	applied track name change patch (Robert Hart)
+	only compile xmms plugin if gdk_pixbuf is installed (Daniel Ahlberg)
+	header file patch to work with C++ linkers (Julian Peterson)
+	Updated xosd spec file to buildrequire xmms-devel (Chris)
+	
 2.0.1:  
 	xosd.h header file patch (Tim Wright)
 	set_font patch (Jan Starzynski)

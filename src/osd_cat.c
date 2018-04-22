@@ -14,7 +14,7 @@ static struct option long_options[] = {
   {"indent",  1, NULL, 'i'},
   {"delay",  1, NULL, 'd'},
   {"offset", 1, NULL, 'o'},
-  {"pos",    0, NULL, 'p'},
+  {"pos",    1, NULL, 'p'},
   {"align",  1, NULL, 'A'},
   {"shadow", 1, NULL, 's'},
   {"age",    1, NULL, 'a'},

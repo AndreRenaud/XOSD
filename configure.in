@@ -4,10 +4,10 @@ AC_INIT(src/testprog.c)
 # version crud for libraries
 LT_CURRENT=2
 LT_AGE=0
-LT_REVISION=1
+LT_REVISION=2
 
 # version for tar file
-VERSION=2.0.1
+VERSION=2.0.2
 
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_AGE)
@@ -68,18 +68,28 @@ AC_ARG_WITH(plugindir,
 dnl Plugin selection starts
 SELECTED_PLUGINS=
 
+dnl --=mjs=-- Check for gdk-pixmap libs.  There is probably a better
+dnl way to do this, but I don't know it.
+AC_PATH_PROG(gdk_pixbuf_config_script, gdk-pixbuf-config, "none")
+
 dnl Check for xmms-config; set the plugin directory
 AC_PATH_PROG(xmms_config_script, xmms-config, "none")
 if test "x$xmms_config_script" = "xnone" ; then
-	echo "*** xmms-config script not found. xmms plugin will not be built"
+     echo "*** xmms-config script not found. xmms plugin will not be built"
+elif test "x$gdk_pixbuf_script" = "xnone" ; then
+     echo "*** gdk-pixbuf-config script not found. xmms plugin will not be built"
 else
 	XMMS_CFLAGS=`$xmms_config_script --cflags`
 	XMMS_LIBS=`$xmms_config_script --libs`
 	AC_MSG_CHECKING(for xmms plugin directory)
 	if test "x$XMMS_PLUGIN_DIR" = "x" ; then
-		XMMS_PLUGIN_DIR=`$xmms_config_script --general-plugin-dir`
+	   XMMS_PLUGIN_DIR=`$xmms_config_script --general-plugin-dir`
 	fi
 	AC_MSG_RESULT($XMMS_PLUGIN_DIR)
+	GDK_PIXBUF_CFLAGS=`$gdk_pixbuf_config_script --cflags`
+	GDK_PIXBUF_LIBS=`$gdk_pixbuf_config_script --libs`
+	AC_SUBST(GDK_PIXBUF_CFLAGS)
+	AC_SUBST(GDK_PIXBUF_LIBS)
 	AC_SUBST(XMMS_CFLAGS)
 	AC_SUBST(XMMS_LIBS)
 	AC_SUBST(XMMS_PLUGIN_DIR)
@@ -89,13 +99,6 @@ fi
 dnl Plugin selection ends
 AC_SUBST(SELECTED_PLUGINS)
 
-dnl --=mjs=-- Check for gdk-pixmap libs.  There is probably a better
-dnl way to do this, but I don't know it.
-AC_PATH_PROG(gdk_pixbuf_config_script, gdk-pixbuf-config, "none")
-GDK_PIXBUF_CFLAGS=`$gdk_pixbuf_config_script --cflags`
-GDK_PIXBUF_LIBS=`$gdk_pixbuf_config_script --libs`
-AC_SUBST(GDK_PIXBUF_CFLAGS)
-AC_SUBST(GDK_PIXBUF_LIBS)
 
 dnl Define XOSD_VERSION
 dnl XOSD_VERSION=${VERSION}
@@ -104,6 +107,8 @@ AC_DEFINE_UNQUOTED(XOSD_VERSION, "${VERSION}")
 dnl Pass the "data" ditectory as a #define symbol, so we can find the 
 dnl pixmaps (--=mjs=-- thanks Julien Blache).
 CFLAGS="${CFLAGS} -DPIXMAPDIR=\\\"\$(datadir)/xosd\\\""
+
+EXTRA_DIST=xosd.spec
 
 dnl Produce Output files
 
@@ -120,3 +125,4 @@ script/xosd-config
 xosd.spec
 ],
 [chmod +x script/xosd-config])
+

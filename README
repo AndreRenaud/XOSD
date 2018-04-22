@@ -1,6 +1,14 @@
 
 Please send any commentry to: xosd@ignavus.net
 
+BSD Notes:
+
+I've heard that to compile xodf under BSD you have to include
+getopt.c, getopt1.c, and getopt.h with the other files...BSD doesn't
+have these in its default distro.
+
+
+
 VERSION 2 notes:
 
 
@@ -17,6 +25,7 @@ has been replaced by
 
 and we can now specify alignment to be top, middle, bottom and
 left,center,right.
+
 
 
 VERSION 1 notes:

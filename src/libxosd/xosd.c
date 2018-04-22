@@ -349,8 +349,23 @@ static int display_slider (xosd *osd, xosd_line *l, int percentage)
   return 0;
 }
 
+static void resize(xosd *osd)
+{
+  pthread_mutex_lock (&osd->mutex);
+
+  XResizeWindow (osd->display, osd->window, osd->width, osd->height);
+  XFreePixmap (osd->display, osd->mask_bitmap);
+  osd->mask_bitmap = XCreatePixmap (osd->display, osd->window, osd->width, osd->height, 1);
+  XFreePixmap (osd->display, osd->line_bitmap);
+  osd->line_bitmap = XCreatePixmap (osd->display, osd->window, osd->width,
+                                    osd->line_height, osd->depth);
+  pthread_mutex_unlock (&osd->mutex);
+}
+
 static int force_redraw (xosd *osd, int line)
 {
+  resize(osd);
+
   if (osd == NULL) return -1;
   pthread_mutex_lock (&osd->mutex);
   for (line = 0; line < osd->number_lines; line++) {
@@ -414,19 +429,6 @@ static int set_font (xosd *osd, const char *font)
   pthread_mutex_unlock (&osd->mutex);
 
   return 0;
-}
-
-static void resize(xosd *osd)
-{
-  pthread_mutex_lock (&osd->mutex);
-
-  XResizeWindow (osd->display, osd->window, osd->width, osd->height);
-  XFreePixmap (osd->display, osd->mask_bitmap);
-  osd->mask_bitmap = XCreatePixmap (osd->display, osd->window, osd->width, osd->height, 1);
-  XFreePixmap (osd->display, osd->line_bitmap);
-  osd->line_bitmap = XCreatePixmap (osd->display, osd->window, osd->width,
-                                    osd->line_height, osd->depth);
-  pthread_mutex_unlock (&osd->mutex);
 }
 
 static int set_colour (xosd *osd, const char *colour)
@@ -568,12 +570,27 @@ xosd *xosd_init (char *font, char *colour, int timeout, xosd_pos pos, int voffse
 
   xosd *osd = xosd_create(number_lines);
   
-  set_font(osd, font);
+  if (osd == NULL) {
+    return NULL;
+  }
+
+  if (set_font(osd, font) == -1) {
+    if (set_font(osd, osd_default_font) == -1) {
+      xosd_destroy (osd);
+      /* 
+	 we do not set xosd_error, as set_font has already
+	 set it to a sensible error message. 
+      */
+      return NULL;
+    } 
+  }
   set_colour(osd, colour);
   set_timeout(osd, timeout);
   xosd_set_pos(osd, pos);
   xosd_set_vertical_offset(osd, voffset);
   xosd_set_shadow_offset(osd, shadow_offset);
+  
+  resize(osd);
 
   return osd;
 }
@@ -795,9 +812,13 @@ int xosd_display (xosd *osd, int line, xosd_command command, ...)
   int percent;
   xosd_line *l = &osd->lines[line];
 
-  assert (line >= 0 && line < osd->number_lines);
 
   if (osd == NULL) return -1;
+
+  if (line < 0 || line >= osd->number_lines) {
+    xosd_error="xosd_display: Invalid Line Number";
+    return -1;
+  }
 
   osd->timeout_time = time(NULL) + osd->timeout;
 

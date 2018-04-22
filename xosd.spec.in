@@ -11,11 +11,6 @@ Packager:	Oron Peled <oron@actcom.co.il>
 Summary:	X On-Screen Display libray
 Source:		%name-@VERSION@.tar.gz
 
-# Oron Peled - Remove after adding to the distribution
-Source1:	xosd-config.in
-Source2:	xosd-Makefile.am
-Source3:	xosd-configure.in
-
 URL:		http://www.ignavus.net/software.html
 Buildroot:	%{_tmppath}/%{name}-%{version}-root
 
@@ -27,6 +22,7 @@ display in X.
 Summary: X On-Screen Display libray (headers + static libs)
 Group: Development/Libraries
 Requires: xosd = %{version}
+BuildRequires: xmms-devel
 
 %description devel
 On-Screen Display library. A library for displaying a TV-like on-screen
@@ -43,16 +39,7 @@ A plugin for XMMS
 %prep
 %setup -n %{name}-@VERSION@
 
-# Oron Peled - should be part of the main distribution
-cp $RPM_SOURCE_DIR/libxosd.m4 .
-cp $RPM_SOURCE_DIR/xosd-Makefile.am Makefile.am
-cp $RPM_SOURCE_DIR/xosd-configure.in configure.in
-cp $RPM_SOURCE_DIR/xosd-config.in script/xosd-config.in
-
 %build
-# Oron Peled - can be removed after fixes to distro
-autoconf
-automake
 
 ./configure --prefix=%{_prefix} --mandir=%{_mandir}
 make

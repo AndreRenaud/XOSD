@@ -889,44 +889,41 @@ static gint timeout_func(gpointer data)
   repeat = xmms_remote_is_repeat (gp.xmms_session);
   balance = (xmms_remote_get_balance(gp.xmms_session) + 100) / 2;
 
-  /**
-   * Check if the position of the current song has changed.
-   * DTM: bugfix
-   *        1) 'get_playlist_time' seems "variable" for a song, don't use it
-   *        2) we must free the titles we download
-   */
-  if (pos != previous_song)
+  if (xmms_remote_get_playlist_length (gp.xmms_session)) /* otherwise it'll crash */
     {
-      if (xmms_remote_get_playlist_length (gp.xmms_session)) /* otherwise it'll crash */
+      text = xmms_remote_get_playlist_title (gp.xmms_session, pos);
+      if (text)
+	replace_hexcodes (text);
+      
+      /**
+       * Check if the position of the current song has changed.
+       * DTM: bugfix
+       *        1) 'get_playlist_time' seems "variable" for a song, don't use it
+       *        2) we must free the titles we download
+       */
+
+      if ( !previous_title || g_strcasecmp(text, previous_title) != 0 ) 
 	{
-
-	  text = xmms_remote_get_playlist_title (gp.xmms_session, pos);
-	  if (text)
-	    replace_hexcodes (text);
-
-	  /**
-	   * Check to see if the title of the song has changed.
-	   */
-	  if ( !previous_title ||
-	       g_strcasecmp(text, previous_title) != 0 ) {
-	    if (show_stop) {
-	      xosd_display (osd, 0, XOSD_string, playing ? "Play" : "Stopped");
-	      xosd_display (osd, 1, XOSD_string, text);
-	    }
-	    save_previous_title( text );
-	  }
-
-	} else {
-	  /** No song titles available. */
 	  if (show_stop) {
 	    xosd_display (osd, 0, XOSD_string, playing ? "Play" : "Stopped");
+	    xosd_display (osd, 1, XOSD_string, text);
 	  }
-	  save_previous_title( 0 );
+	  save_previous_title( text );
 	}
-
+    }
+  
+  if (pos != previous_song)
+    {
+      if (!xmms_remote_get_playlist_length (gp.xmms_session)) /* otherwise it'll crash */
+	/** No song titles available. */
+	if (show_stop) {
+	  xosd_display (osd, 0, XOSD_string, playing ? "Play" : "Stopped");
+	}
+      save_previous_title( 0 );
+      
       previous_song = pos;
     }
-
+  
   else if (playing != previous_playing )
     {
       if (playing && show_trackname)

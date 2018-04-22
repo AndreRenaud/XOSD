@@ -1,6 +1,12 @@
 #ifndef XOSD_H
 #define XOSD_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Error message when a routine returns failure */
 extern char *xosd_error;
 extern const char* osd_default_font;
@@ -282,5 +288,10 @@ int xosd_scroll(xosd *osd, int lines);
  *  -1 on failure
 */
 int xosd_get_number_lines(xosd* osd);
+
+#ifdef __cplusplus
+};
+#endif
+
 
 #endif
